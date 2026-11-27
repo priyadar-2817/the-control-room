@@ -298,7 +298,7 @@ footer{border-top:1px solid var(--edge)}
 .htag.on{opacity:1;transform:none;color:var(--ink)}.htag.on i{background:var(--ink)}
 .htag.now{box-shadow:0 0 0 1.5px var(--blue),var(--win)}.htag.now i{background:var(--blue)}
 .htag:hover{opacity:1;color:var(--ink)}
-.t0{left:0;top:24%}.t1{right:0;top:38%}.t2{left:0;top:58%}.t3{right:0;top:74%}
+.t0{left:0;top:12%}.t1{right:0;top:21%}.t2{left:0;top:32%}.t3{right:0;top:43%}.t4{left:0;top:54%}.t5{right:0;top:65%}.t6{left:0;top:76%}.t7{right:0;top:86%}
 .needs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border-top:1px solid var(--panel);border-left:1px solid var(--panel);margin:24px 0 96px}
 .need{display:flex;flex-direction:column;gap:6px;text-align:left;padding:20px;border:0;border-right:1px solid var(--panel);border-bottom:1px solid var(--panel);background:var(--canvas);min-height:150px;transition:background .15s var(--ease)}
 .need:hover{background:var(--white)}
@@ -337,6 +337,11 @@ footer{border-top:1px solid var(--edge)}
 .hstep.in{opacity:1;transform:none}
 .tree .wait{color:var(--muted)}.tree .wait b{color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.dots i,.spin{animation:none}.hstep{transition:none}}
+
+.tapped{transform:scale(.94);filter:brightness(.85);transition:transform .15s ease,filter .15s ease}
+.hroll .mini span,.hroll .chip,.hroll .row2{transition:transform .2s ease,filter .2s ease,background .3s ease}
+.row2.picked{background:var(--fill);border-radius:10px;box-shadow:0 0 0 1.5px #171717;padding-left:8px;padding-right:8px}
+.okdot{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block}
 </style></head><body>
 <header><div class="wrap nav">
  <a class="mark" href="#play" aria-label="The Control Room, home"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="1" width="22" height="22" rx="7" fill="#171717"/><path d="M6.5 8.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v4.5a2 2 0 0 1-2 2h-4.2L8.5 17.5v-2.5a2 2 0 0 1-2-2z" fill="none" stroke="#fafafa" stroke-width="1.6" stroke-linejoin="round"/><circle cx="17.5" cy="6.5" r="3" fill="#0072f5" stroke="#171717" stroke-width="1.5"/></svg>The Control Room</a>
@@ -614,7 +619,7 @@ function screen(o){const w=`<div class="win"><div class="chrome" aria-hidden="tr
 const devSwitch=()=>'';const _unusedSwitch=()=>`<div class="devs" role="group" aria-label="View on">${[['phone','Phone'],['web','Laptop']].map(([k,l])=>`<button aria-pressed="${dev===k}" data-dev="${k}">${k==='phone'?'<svg width="12" height="16" viewBox="0 0 12 16" aria-hidden="true"><rect x="1" y="1" width="10" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>':'<svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><rect x="3" y="1" width="12" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M1 12.5h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'}${l}</button>`).join('')}</div>`;
 
 const NEEDQ={OR:'What can it do?',UN:'Is it working? Is it right?',CO:'Can I steer or stop it?',TR:'Should I rely on it?',EF:'Can this take less work?',DE:'Can I let it act for me?'};
-const HTAGS=[{name:'Clarifying question',step:0},{name:'Plan first',step:1},{name:'Openable steps',step:3},{name:'Point of no return',step:5}];
+const HTAGS=STEPS.map((s,i)=>({name:byId[s.id].name,step:i}));
 let heroTimer=null;
 function runHero(){
   clearTimeout(heroTimer);
@@ -630,27 +635,52 @@ function runHero(){
   const reply=h=>{const x=$('hthink');if(x){x.parentNode.remove();}add(A(h));};
   let secs=0, clock=null;
   const startClock=()=>{secs=0;clearInterval(clock);clock=setInterval(()=>{secs++;const e=$('hclock');if(e)e.textContent=`0:${String(secs).padStart(2,'0')}`;else clearInterval(clock)},1000)};
+  const tap=id=>{const e=$(id);if(e){e.classList.add('tapped');setTimeout(()=>e.classList.remove('tapped'),350)}};
+  const hold=(ms,f)=>[ms,f||(()=>{})];
   const seq=[
    [0,()=>{clearInterval(clock);inner.classList.add('fade')}],
    [450,()=>{inner.style.transition='none';inner.innerHTML='';inner.style.transform='translateY(0)';void inner.offsetHeight;inner.style.transition='';inner.classList.remove('fade');tagOn(-1);ty.textContent='';}],
+   /* 1 clarifying question */
    ...Array.from(ask).map((c,i)=>[i===0?700:38+((i*7)%5)*9,()=>{ty.textContent=ask.slice(0,i+1)}]),
    [650,()=>{ty.textContent='Reply…';add(`<div class="u">${ask}</div>`)}],
    [700,think],
    [1900,()=>{reply(`<p>One question first: what matters most?</p><div class="chips"><span class="chip" id="hc1">Under 3 hours away</span><span class="chip">Lowest price</span></div>`);tagOn(0)}],
-   [1700,()=>{const c=$('hc1');c&&c.classList.add('on')}],
+   [1700,()=>{tap('hc1');const c=$('hc1');c&&c.classList.add('on')}],
    [500,()=>{add(`<div class="u">Under 3 hours away</div>`)}],
+   /* 2 plan first */
    [650,think],
-   [2300,()=>{reply(`<p><b>Plan</b> · 4 steps</p><div class="tree" id="hplan"></div>`);tagOn(1)}],
+   [2100,()=>{reply(`<p><b>Plan</b> · 4 steps</p><div class="tree" id="hplan"></div><div class="mini" id="hpm" style="opacity:0;transition:opacity .4s"><span class="p" id="hstart">Start · 4 steps</span><span>Edit a step</span></div>`);tagOn(1)}],
    ...['Find dates all 12 are free','Shortlist 3 venues','Draft the invite','Pay the deposit'].map((s,i)=>[i===0?500:420,()=>{const p=$('hplan');if(p){const d=document.createElement('div');d.className='hstep';d.textContent=`${i+1} · ${s}`;p.appendChild(d);requestAnimationFrame(()=>{d.classList.add('in');fit()})}}]),
-   [1500,()=>{add(A(`<div class="status"><span class="spin"></span>Working · <span id="hclock">0:00</span></div><div class="tree"><div id="hs1"><b>Calendars</b> <span class="spin"></span><small id="hs1t">Checking 12 people</small></div><div id="hs2" class="wait"><b>Venues</b><small id="hs2t">Next</small></div></div>`));startClock();tagOn(2)}],
+   [450,()=>{const m=$('hpm');m&&(m.style.opacity=1);fit()}],
+   [1600,()=>tap('hstart')],
+   /* 3 access request */
+   [700,think],
+   [1500,()=>{reply(`<p>I need one thing to find dates.</p><div class="card"><b>Team calendar</b><div class="row2"><span class="m">Read only · this task only</span></div></div><div class="mini"><span class="p" id="hallow">Allow</span><span>Not now</span></div>`);tagOn(2)}],
+   [1800,()=>tap('hallow')],
+   /* 4 openable steps */
+   [800,()=>{add(A(`<div class="status"><span class="spin"></span>Working · <span id="hclock">0:00</span></div><div class="tree"><div id="hs1"><b>Calendars</b> <span class="spin"></span><small id="hs1t">Checking 12 people</small></div><div id="hs2" class="wait"><b>Venues</b><small id="hs2t">Next</small></div></div>`));startClock();tagOn(3)}],
    [1300,()=>{const t=$('hs1t');t&&(t.textContent='7 of 12 checked')}],
    [1200,()=>{const s=$('hs1');s&&(s.innerHTML='<b>Calendars</b> <span class="ok">✓</span><small>All 12 free on 23–24 Jan</small>');const v=$('hs2');v&&(v.className='',v.innerHTML='<b>Venues</b> <span class="spin"></span><small id="hs2t">Reading 4 of 30</small>')}],
-   [900,()=>{const t=$('hs2t');t&&(t.textContent='Reading 13 of 30')}],
-   [900,()=>{const t=$('hs2t');t&&(t.textContent='Reading 24 of 30')}],
-   [900,()=>{const v=$('hs2');v&&(v.innerHTML='<b>Venues</b> <span class="ok">✓</span><small>Read 30, kept 3</small>');fit()}],
-   [800,think],
-   [1800,()=>{clearInterval(clock);reply(`<div class="card gate"><b>Waiting for you</b><p style="margin:6px 0">Pay ₹90,000 deposit to Hillcrest</p><div class="warn">Can't be undone after 10 Jan</div><div class="mini"><span class="p">Pay ₹90,000</span><span>Not now</span></div></div>`);tagOn(3)}],
-   [5000,()=>{}]
+   [900,()=>{const t=$('hs2t');t&&(t.textContent='Reading 15 of 30')}],
+   [900,()=>{const t=$('hs2t');t&&(t.textContent='Reading 27 of 30')}],
+   [800,()=>{clearInterval(clock);const v=$('hs2');v&&(v.innerHTML='<b>Venues</b> <span class="ok">✓</span><small>Read 30, kept 3</small>');fit()}],
+   /* 5 confidence flags */
+   [700,think],
+   [1700,()=>{reply(`<p>3 venues for 23–24 Jan</p><div class="card"><div class="row2" id="hv1"><b>Hillcrest Retreat</b><span class="r">₹3,62,000</span><span class="m">14 rooms</span></div><div class="row2"><b>Saltwater House</b><span class="r">₹3,95,000</span><span class="m">10 rooms?</span><span class="flag">The site says 10 rooms, a review says 8.</span></div><div class="row2"><b>The Orchard Stay</b><span class="r">₹2,80,000</span><span class="m">12 rooms</span></div></div>`);tagOn(4)}],
+   [2200,()=>{tap('hv1');const v=$('hv1');v&&v.classList.add('picked')}],
+   [500,()=>{add(`<div class="u">Hillcrest, please</div>`)}],
+   /* 6 point of no return */
+   [700,think],
+   [1600,()=>{reply(`<div class="card gate"><b>Waiting for you</b><p style="margin:6px 0">Pay ₹90,000 deposit to Hillcrest</p><div class="warn">Can't be undone after 10 Jan</div><div class="mini"><span class="p" id="hpay">Pay ₹90,000</span><span>Not now</span></div></div>`);tagOn(5)}],
+   [2600,()=>tap('hpay')],
+   [500,()=>{add(`<div class="u">Pay ₹90,000</div>`)}],
+   /* 7 graceful handoff */
+   [700,think],
+   [1800,()=>{reply(`<p>Step-free rooms need a person to confirm. I've sent it to <b>Meera at Hillcrest</b> with the dates.</p><div class="status"><span class="okdot"></span>Usually replies within 2 hours</div>`);tagOn(6)}],
+   /* 8 receipt with undo */
+   [2400,think],
+   [1600,()=>{reply(`<p><b>What I did</b> · undo for 24 h</p><div class="log"><div><time>10:02</time><span>Read 12 calendars</span><span></span></div><div><time>10:31</time><span>Held 23–24 Jan</span><span class="x">Undo</span></div><div><time>10:33</time><span>Sent 12 invites</span><span class="x">Undo</span></div><div><time>11:58</time><span>Paid ₹90,000</span><em>Can't undo</em></div></div>`);tagOn(7)}],
+   [5200,()=>{}]
   ];
   if(matchMedia('(prefers-reduced-motion:reduce)').matches){seq.slice(2,-1).forEach(s=>s[1]());clearInterval(clock);document.querySelectorAll('.hstep').forEach(d=>d.classList.add('in'));inner.querySelectorAll('.hin').forEach(d=>d.classList.add('in'));fit();return;}
   let i=0;const tick=()=>{if(!document.getElementById('hthread'))return;seq[i][1]();i=(i+1)%seq.length;heroTimer=setTimeout(tick,seq[i][0])};tick();
