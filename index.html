@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#fafafa;color-scheme:light"><head><meta charset="utf-8"><meta name="color-scheme" content="light"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Control Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;450;500;600&family=Geist+Mono:wght@400;500&family=Silkscreen&display=swap" rel="stylesheet">
+<style>
+/* VOICE: confident, literal, quiet. Infrastructure-calm, applied to agent behaviour.
+   IDEA: a technical still life. Two agent screens are the demonstration; everything else recedes.
+   PICTURE: real agent interfaces (iOS chat on phones, a floating web window on desktop), plus one dark dial object on the start screen.
+   COLOUR and TYPE: off-white canvas, primary ink, graphite copy, faint edges; blue only as a small engineered reveal and status signal. Geist, Geist Mono, Silkscreen for the score.
+   LAYOUT: left promise, central object, right utility rail; moments as heading + rail, then two windows; verdict as proof statement + folded tile. */
+:root{color-scheme:light;
+ --canvas:#fafafa;--white:#fff;--ink:#171717;--sec:#4d4d4d;--muted:#8f8f8f;
+ --edge:#ebebeb;--panel:#e6e6e6;--fill:#fafafa;
+ --blue:#0072f5;--status:#0070f3;--good:#297a3a;--bad:#bd2864;--amberbg:#ffffff;--amber:#4d4d4d;
+ --win:0 0 0 1px rgba(0,0,0,.08),0 2px 2px 0 rgba(0,0,0,.04),0 8px 16px -4px rgba(0,0,0,.06);
+ --ease:cubic-bezier(.4,0,.2,1)}
+:root,:root[data-theme=dark],:root[data-theme=light]{color-scheme:light}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:#fafafa;color:var(--ink);font:16px/1.5 Geist,Inter,Arial,sans-serif;font-feature-settings:"ss11";overflow-x:clip}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+p{text-wrap:pretty}
+.wrap{max-width:1448px;margin:0 auto;padding:0 24px}
+
+/* nav */
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--canvas) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--edge)}
+.nav{height:64px;display:flex;align-items:center;gap:24px}
+.mark{display:flex;align-items:center;gap:8px;font-weight:500;font-size:15px;text-decoration:none;letter-spacing:-.01em}
+.links{display:flex;gap:4px}
+.links a{font-size:14px;color:var(--sec);text-decoration:none;padding:6px 10px;border-radius:6px;min-height:36px;display:flex;align-items:center}
+.links a:hover{color:var(--ink)}
+.links a[aria-current=page]{color:var(--ink);background:var(--fill)}
+.nact{margin-left:auto;height:32px;padding:0 10px;border-radius:6px;background:var(--ink);color:var(--canvas);font-size:14px;font-weight:500;border:0;display:flex;align-items:center;text-decoration:none}
+
+/* capsules */
+.cap{display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 14px;border-radius:9999px;font-weight:500;font-size:16px;border:0;text-decoration:none;white-space:nowrap;transition:background .15s var(--ease),box-shadow .15s var(--ease)}
+.cap.pri{background:var(--ink);color:var(--canvas)}
+.cap.sec{background:var(--white);color:var(--ink);box-shadow:0 0 0 1px var(--edge)}
+.cap.sec:hover{box-shadow:0 0 0 1px var(--muted)}
+.caps{display:flex;gap:12px;flex-wrap:wrap}
+
+.view{display:none}.view.on{display:block}
+
+/* start */
+.stage{display:grid;grid-template-columns:444px minmax(0,1fr) 260px;gap:24px;align-items:center;min-height:min(760px,calc(100vh - 64px));padding:48px 0}
+.display{font-size:clamp(44px,5vw,64px);line-height:1;font-weight:400;letter-spacing:-.06em;margin:0 0 32px;text-wrap:balance}
+.lead{font-size:18px;line-height:28px;color:var(--sec);margin:-12px 0 32px;max-width:40ch}
+.object{position:relative;display:grid;place-items:center;height:420px}
+.object::before{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,#fff 0%,transparent 65%)}
+.object svg{position:relative;width:200px;height:200px;filter:drop-shadow(0 24px 24px rgba(0,0,0,.18))}
+.rail{display:grid;gap:20px;font-size:16px;color:var(--sec)}
+.rail b{display:block;color:var(--ink);font-weight:500}
+
+/* moment */
+.moment{padding:40px 0 96px}
+.track{display:flex;gap:4px;margin-bottom:32px}
+.track span{flex:1;height:2px;background:var(--edge)}.track span.d{background:var(--ink)}.track span.n{background:var(--blue)}
+.mhead{display:grid;grid-template-columns:minmax(0,1fr) 333px;gap:24px;align-items:end;margin-bottom:44px}
+.label{font-size:14px;font-weight:500;color:var(--sec);margin:0 0 12px}
+.heading{font-size:clamp(34px,4vw,56px);line-height:1;font-weight:450;letter-spacing:-.06em;margin:0;text-wrap:balance;max-width:18ch}
+.scene{font-size:18px;line-height:28px;color:var(--sec);margin:0}
+.duel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.opt{display:flex;flex-direction:column;gap:12px;cursor:pointer;outline:none;transition:opacity .3s var(--ease)}
+.olab{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500;min-height:32px}
+.olab .k{width:24px;height:24px;border-radius:50%;box-shadow:0 0 0 1px var(--panel);display:grid;place-items:center;font-size:12px;font-weight:600;flex:none;background:var(--white)}
+.pick-tag{margin-left:auto;font-size:13px;font-weight:500;height:24px;padding:0 10px;border-radius:9999px;display:inline-flex;align-items:center;color:#fff}
+.pick-tag.good{background:var(--good)}.pick-tag.bad{background:var(--bad)}
+.opt[aria-pressed=true] .olab .k{background:var(--ink);color:var(--canvas);box-shadow:none}
+
+.duel.picked .opt[aria-pressed=false]{opacity:.5}
+.duel.picked .opt[aria-pressed=false]:hover{opacity:.85}
+.opt:focus-visible .win{box-shadow:0 0 0 2px var(--blue)}
+
+
+/* window (web) */
+.win{background:var(--white);border-radius:12px;box-shadow:var(--win);overflow:hidden;display:flex;flex-direction:column;min-height:380px;transition:box-shadow .15s var(--ease)}
+.chrome{height:40px;display:flex;align-items:center;gap:6px;padding:0 14px;border-bottom:1px solid var(--edge);font-size:12px;color:var(--muted)}
+.chrome i{width:10px;height:10px;border-radius:50%;background:var(--edge)}
+.chrome span{margin:0 auto;padding-right:40px}
+
+.thread{flex:1;padding:20px;display:grid;gap:14px;align-content:start}
+.u{justify-self:end;max-width:86%;background:var(--fill);box-shadow:0 0 0 1px var(--edge);border-radius:20px;padding:12px 16px;font-size:15px;line-height:22px}
+.a{font-size:15px;line-height:22px;max-width:96%}
+.a p{margin:0 0 8px}.a p:last-child{margin:0}
+.who{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:6px}
+.who .av{width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--canvas);display:grid;place-items:center;font-size:10px;font-weight:600}
+.status{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--sec)}
+.tree{margin:8px 0 0 7px;padding-left:14px;border-left:1px solid var(--panel);display:grid;gap:8px;font-size:14px}
+.tree b{font-weight:500;color:var(--ink)}.tree small{display:block;color:var(--muted);font-size:12px}
+.ok{color:var(--good)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{height:32px;padding:0 12px;border-radius:9999px;box-shadow:0 0 0 1px var(--edge);display:inline-flex;align-items:center;font-size:13px;background:var(--white)}
+.chip.on{box-shadow:0 0 0 1.5px var(--ink);font-weight:500}
+.mini{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.mini span{height:32px;padding:0 12px;border-radius:9999px;display:inline-flex;align-items:center;font-size:13px;font-weight:500;box-shadow:0 0 0 1px var(--edge);background:var(--white)}
+.mini span.p{background:var(--ink);color:var(--canvas);box-shadow:none}
+.card{border:1px solid var(--panel);border-radius:12px;padding:12px 14px;margin-top:8px;background:var(--white)}
+.card.gate{border-color:var(--ink)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:8px 0;border-top:1px solid var(--edge);font-size:14px}
+.row2:first-child{border-top:0;padding-top:0}
+.row2 .r{text-align:right;font-family:"Geist Mono",ui-monospace,monospace;font-size:13px;white-space:nowrap}
+.row2 .m{color:var(--muted);font-size:13px}
+.flag{grid-column:1/-1;background:var(--amberbg);color:var(--amber);border:1px dashed #a8a8a8;border-radius:8px;padding:6px 10px;font-size:13px;margin-top:4px}
+.flag::before{content:"Check · ";color:var(--ink);font-weight:500}
+.warn{color:var(--bad);font-size:14px}
+.log{display:grid;gap:6px;font-size:14px;margin-top:8px}
+.log div{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:8px;align-items:baseline}
+.log time{font-family:"Geist Mono",monospace;font-size:12px;color:var(--muted)}
+.log .x{color:var(--blue);font-weight:500;font-size:13px}.log em{font-style:normal;color:var(--muted);font-size:12px}
+.bar{height:4px;background:var(--edge);border-radius:4px;overflow:hidden;margin-top:10px}.bar span{display:block;height:100%;background:var(--ink)}
+.comp{margin:0 14px 14px;border-radius:16px;box-shadow:0 0 0 1px var(--edge);padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;color:var(--muted);font-size:14px}
+.comp .mode{height:28px;padding:0 10px;border-radius:9999px;box-shadow:0 0 0 1px var(--edge);display:inline-flex;align-items:center;font-size:13px;color:var(--ink)}
+.comp .stop{width:28px;height:28px;border-radius:50%;background:var(--ink);display:grid;place-items:center}
+.comp .stop::after{content:"";width:9px;height:9px;border-radius:2px;background:var(--canvas)}
+.tapnote{color:var(--muted);font-size:14px;margin:20px 0 0;text-align:center}
+
+
+
+/* device switch */
+.devs{display:inline-flex;gap:2px;background:var(--fill);border-radius:8px;padding:3px}
+.devs button{height:36px;padding:0 14px;border:0;border-radius:6px;background:transparent;font-size:14px;font-weight:500;color:var(--sec);display:inline-flex;align-items:center;gap:6px}
+.devs button[aria-pressed=true]{background:var(--white);color:var(--ink);box-shadow:0 0 0 1px var(--edge)}
+.mtools{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:-20px 0 24px;flex-wrap:wrap}
+.mtools small{color:var(--muted);font-size:14px}
+/* phone mockup */
+.dev-phone .opt{align-items:center}
+.dev-phone .olab{align-self:stretch;justify-content:center}
+.dev-phone .olab .pick-tag{margin-left:8px}
+.dev-phone .win{width:min(310px,100%);aspect-ratio:9/19.5;min-height:0;border-radius:44px;box-shadow:0 0 0 4px #171717,0 0 0 5px #a8a8a8,0 24px 48px -24px rgba(0,0,0,.35);margin:6px}
+.dev-phone .thread{overflow-y:auto;scrollbar-width:none}
+.dev-phone .opt[aria-pressed=true] .win{box-shadow:0 0 0 4px #171717,0 0 0 7px var(--blue),0 24px 48px -24px rgba(0,0,0,.35)}
+@media(hover:hover){.dev-phone .opt:hover .win{box-shadow:0 0 0 4px #171717,0 0 0 6px #8f8f8f,0 24px 48px -24px rgba(0,0,0,.35)}}
+.dev-phone .chrome{display:none}
+.sbar{display:flex;justify-content:space-between;align-items:center;padding:14px 26px 4px;font-size:14px;font-weight:600;position:relative}
+.sbar::after{content:"";position:absolute;left:50%;top:10px;width:30%;height:28px;border-radius:20px;background:#171717;transform:translateX(-50%)}
+.sbar em{font-style:normal;font-size:11px;letter-spacing:1px}
+.inav{display:flex;align-items:center;gap:12px;padding:10px 16px}
+.inav i{width:34px;height:34px;border-radius:50%;background:var(--fill);display:grid;place-items:center;font-style:normal;font-size:14px}
+.inav b{font-weight:600;font-size:15px;margin-right:auto}
+.dev-phone .thread{padding:10px 16px}
+.dev-phone .comp{margin:0 12px 26px}
+.dev-web .ios{display:none}
+/* laptop mockup */
+.lap{width:100%}
+.dev-web .win{border-radius:14px 14px 0 0;border:10px solid #171717;border-bottom-width:14px;box-shadow:none;min-height:380px}
+.base{height:14px;margin:0 -2.5%;background:linear-gradient(#e6e6e6,#a8a8a8);border-radius:0 0 14px 14px;position:relative}
+.base::before{content:"";position:absolute;left:50%;top:0;width:18%;height:6px;transform:translateX(-50%);background:#c9c9c9;border-radius:0 0 8px 8px}
+.dev-web .opt[aria-pressed=true] .win{border-color:var(--ink);box-shadow:0 0 0 3px var(--blue)}
+@media(hover:hover){.dev-web .opt:hover .win{box-shadow:0 0 0 2px var(--muted)}}
+.dev-web .opt[aria-pressed=true] .win,.dev-web .opt:hover .win{border-radius:14px 14px 0 0}
+.start-dev{display:grid;gap:8px;margin:0 0 28px}
+.start-dev small{font-size:14px;color:var(--sec)}
+
+
+/* verdict */
+.verdict{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:24px;margin-top:56px;align-items:start}
+.proof{font-size:24px;line-height:32px;letter-spacing:-.04em;font-weight:450;margin:0 0 32px;max-width:30ch}
+.proof span{color:var(--sec)}
+.tile{position:relative;overflow:hidden;border-radius:6px;background:var(--canvas);box-shadow:0 0 0 1px rgba(0,0,0,.08);padding:20px 20px 20px;min-height:200px;display:flex;flex-direction:column;justify-content:flex-end;isolation:isolate}
+.tile::before{content:"";position:absolute;right:0;bottom:0;width:72px;height:72px;z-index:-1;background-image:linear-gradient(to right,rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(#52aeff,#0072f5 160%);background-size:16px 16px,16px 16px,100% 100%;box-shadow:inset 0 1px 2px rgba(0,0,0,.18)}
+.tile::after{content:"";position:absolute;right:0;bottom:0;width:72px;height:72px;background:linear-gradient(-45deg,transparent 50%,#fff 50%,#ebebeb 70%,#fff 100%);filter:drop-shadow(-3px -4px 6px rgba(0,0,0,.14));clip-path:polygon(0 0,100% 0,0 100%)}
+.tile .face{position:absolute;inset:0;z-index:-2;background:var(--canvas)}
+.tile small{font-size:14px;font-weight:500;color:var(--sec);margin-bottom:auto}
+.tile h3{font-size:24px;line-height:1.1;letter-spacing:-.05em;font-weight:450;margin:0 0 6px;max-width:12ch}
+.tile p{font-size:14px;line-height:20px;color:var(--sec);margin:0;max-width:32ch;padding-right:64px}
+.back{border:0;background:none;color:var(--muted);font-size:14px;margin-top:16px;padding:0;min-height:40px;text-decoration:underline;text-underline-offset:3px}
+
+/* end */
+.end{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;padding:96px 0 120px;align-items:start}
+.inset{background:#0a0a0a;border:1px solid #2e2e2e;border-radius:2px;color:#ededed;padding:56px 40px}
+.inset .label{color:#a1a1a1}.inset .proof{color:#ededed}.inset .proof span{color:#a1a1a1}
+.inset .cap.pri{background:#ededed;color:#171717}.inset .cap.sec{background:#0a0a0a;color:#ededed;box-shadow:0 0 0 1px #2e2e2e}
+.score{font-family:Silkscreen,"Geist Mono",monospace;font-size:clamp(72px,10vw,110px);line-height:.9;letter-spacing:-.03em;margin:0 0 16px}
+.rows{border-top:1px solid var(--edge)}
+.rows div{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:16px;padding:16px 12px;border-bottom:1px solid var(--edge);align-items:baseline}
+.rows .i{color:var(--muted);font-variant-numeric:tabular-nums;font-size:15px}
+.rows b{font-weight:450;font-size:18px;letter-spacing:-.02em;display:block}
+.rows small{color:var(--sec);font-size:14px}
+
+/* library */
+.page{padding-top:96px;padding-bottom:120px}
+.ph{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:end;margin-bottom:56px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.fchip{height:36px;padding:0 14px;border-radius:9999px;border:0;background:var(--white);box-shadow:0 0 0 1px var(--edge);font-size:14px}
+.fchip[aria-pressed=true]{background:var(--ink);color:var(--canvas);box-shadow:none}
+.search{height:40px;border-radius:9999px;border:0;box-shadow:0 0 0 1px var(--edge);background:var(--white);color:var(--ink);padding:0 16px;font-size:16px;width:min(100%,420px)}
+.count{color:var(--muted);font-size:14px;margin:24px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));border-top:1px solid var(--panel);border-left:1px solid var(--panel)}
+.pcard{border-right:1px solid var(--panel);border-bottom:1px solid var(--panel);padding:24px;display:flex;flex-direction:column;gap:8px;background:var(--canvas)}
+.pcard .top{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.pcard h3{margin:0;font-size:20px;line-height:1.2;letter-spacing:-.03em;font-weight:450}
+.pcard p{margin:0;font-size:14px;line-height:20px;color:var(--sec)}
+.pcard .ps{color:var(--muted);font-size:13px}
+.pcard .go{margin-top:auto;padding-top:8px;font-size:14px;font-weight:500;border:0;background:none;padding-left:0;text-align:left;text-decoration:underline;text-underline-offset:3px;min-height:36px}
+.gap{color:var(--blue)}
+.reading{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:56px}
+.reading a{display:flex;flex-direction:column;gap:32px;padding:24px;border:1px solid var(--panel);border-radius:2px;text-decoration:none}
+.reading a:hover{border-color:var(--muted)}
+.reading b{font-weight:500;font-size:14px}.reading span{color:var(--sec);font-size:14px}
+.h2{font-size:24px;line-height:32px;letter-spacing:-.04em;font-weight:450;margin:0 0 20px}
+.prose{max-width:62ch;font-size:18px;line-height:28px;color:var(--sec)}.prose p{margin:0 0 20px}.prose b{color:var(--ink);font-weight:500}
+
+footer{border-top:1px solid var(--edge)}
+.foot{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding-top:40px;padding-bottom:40px;font-size:14px;color:var(--sec)}
+.sig{font-family:"Geist Mono",monospace;font-size:12px;font-weight:500;text-transform:uppercase;color:var(--status);display:flex;align-items:center;gap:8px}
+.sig::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--status)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media(max-width:1100px){.stage{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.rail{grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr))}.verdict{grid-template-columns:minmax(0,1fr) 340px}}
+.inset .score{color:#ededed}
+@media(max-width:760px){
+ .inset{padding:40px 24px}
+ .wrap{padding:0 16px}.nav{gap:8px}.mark{font-size:0;gap:0}.links{overflow-x:auto;flex:1}.links a{padding:6px 8px;flex:none}.nact{display:none}
+ .stage{grid-template-columns:minmax(0,1fr);min-height:0;padding:40px 0 56px;gap:8px}.object{height:240px;order:-1}.object::before{width:260px;height:260px}.object svg{width:140px;height:140px}.rail{grid-template-columns:minmax(0,1fr);gap:12px;margin-top:24px}
+ .moment{padding:24px 0 72px}.mhead{grid-template-columns:minmax(0,1fr);gap:12px;margin-bottom:20px}.scene{font-size:16px;line-height:24px}
+ .duel{grid-template-columns:minmax(0,1fr);gap:40px}
+ .verdict{grid-template-columns:minmax(0,1fr);margin-top:32px;gap:20px}.proof{font-size:20px;line-height:28px;margin-bottom:20px}
+ .end,.ph{grid-template-columns:minmax(0,1fr)}.end{padding:56px 0 72px}.page{padding-top:56px;padding-bottom:72px}
+ .tile{min-height:170px}
+}
+
+/* one-screen layout on wide screens */
+@media(min-width:1101px){
+ .moment{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"track track" "head duel" "tools duel" "vw duel";grid-template-rows:auto auto auto 1fr;column-gap:56px;padding:24px 0 40px}
+ .track{grid-area:track;margin-bottom:24px}
+ .mhead{grid-area:head;grid-template-columns:minmax(0,1fr);gap:16px;margin-bottom:16px;align-items:start}
+ .heading{font-size:clamp(32px,3.2vw,48px)}
+ .scene{font-size:17px;line-height:26px}
+ .mtools{grid-area:tools;margin:0 0 8px}
+ .duel{grid-area:duel;grid-template-columns:auto auto;gap:28px;align-self:start}
+ .dev-phone .win{width:auto;height:min(620px,calc(100vh - 175px));min-height:490px;aspect-ratio:9/19.5}
+ .mtools small{display:none}
+ .mtools{margin:0}
+ .vwrap{grid-area:vw}
+ .verdict{grid-template-columns:minmax(0,1fr);margin-top:16px;gap:20px}
+ .proof{font-size:21px;line-height:29px;margin-bottom:20px}
+ .tile{min-height:0;padding:16px 18px}
+ .tile small{margin-bottom:10px}
+ .tile h3{font-size:22px}
+ .tapnote{text-align:left;margin-top:16px}
+ .vwrap .back{margin-top:4px}
+ .vwrap div[style*="text-align:center"]{text-align:left!important}
+}
+
+</style></head><body>
+<header><div class="wrap nav">
+ <a class="mark" href="#play" aria-label="The Control Room, home"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="6" width="22" height="12" rx="6" fill="currentColor"/><rect x="4" y="11" width="10" height="2" rx="1" fill="#0072f5"/><circle cx="15" cy="12" r="3.6" fill="#fafafa"/></svg>The Control Room</a>
+ <nav class="links" aria-label="Sections"><a href="#play">Play</a><a href="#library">Library</a><a href="#reading">Further reading</a><a href="#about">About</a></nav>
+ <a class="nact" href="#library">64 patterns</a>
+</div></header>
+
+<main>
+<section class="view" id="v-play"><div class="wrap" id="stage"></div></section>
+
+<section class="view" id="v-try"><div class="wrap" id="single"></div></section>
+
+<section class="view" id="v-library"><div class="wrap page">
+ <div class="ph"><h1 class="heading">Patterns, sorted by what the mind needs</h1><p class="scene">Each pattern answers a question in someone's head while they work with an AI. Filter by that need, or by how much the AI is driving.</p></div>
+ <div class="filters" id="needf"></div>
+ <div class="filters" id="lvlf"></div>
+ <input class="search" id="q" type="search" placeholder="Search by problem, name or psychology" aria-label="Search patterns">
+ <p class="count" id="count"></p>
+ <div class="grid" id="grid"></div>
+</div></section>
+
+<section class="view" id="v-reading"><div class="wrap page">
+ <div class="ph"><h1 class="heading">Further reading</h1><p class="scene">Good places to go deeper. The Control Room is written independently; these are reading, not sources of its text.</p></div>
+ <h2 class="h2">Design guidance</h2><div class="reading" id="read1"></div>
+ <h2 class="h2">The psychology underneath</h2><div class="reading" id="read2"></div>
+</div></section>
+
+<section class="view" id="v-about"><div class="wrap page">
+ <div class="ph"><h1 class="heading">How much should an agent do before it checks with you?</h1><span></span></div>
+ <div class="prose">
+  <p>Agents don't just answer. They plan, spend, send and book. The design question is no longer what the AI says, but how far it should go on its own.</p>
+  <p>The Control Room sorts AI interaction patterns by the psychological need each serves: <b>Orientation</b>, <b>Uncertainty</b>, <b>Control</b>, <b>Trust</b>, <b>Effort</b> and <b>Delegation</b>. Each is placed on a spectrum of who is driving, from human leads to AI hands back.</p>
+  <p>In <b>Play</b>, you follow an agent through a real job and choose how it should behave at 8 moments. Every choice shows the pattern, the psychology behind it, and what happens without it.</p>
+  <p>Patterns marked as gaps (clarifying questions, access requests, dry runs, budget guards, teams of agents and more) are areas existing collections rarely cover.</p>
+  <p>The scenario, venues, people and amounts are made up. Product names in the library only say where a pattern can be seen.</p>
+  <p>Designed and written by Priyadarshi, a product designer working where behavioural psychology meets product design.</p>
+ </div>
+</div></section>
+</main>
+
+<footer><div class="wrap foot"><span>The Control Room · an independent project · scenario and data are fictional</span><span class="sig">Agent online</span></div></footer>
+
+<script>
+{
+const LIB = [{"id": "OR-01", "name": "One front door", "problem": "People can't find the AI, or find five versions of it", "solution": "One consistent entry, one name, same spot everywhere", "psych": "Recognition over recall", "levels": "L1", "seen": "Notion, Figma", "gap": false}, {"id": "OR-02", "name": "Scope card", "problem": "People over- or under-estimate what it can do", "solution": "Short statement of strengths, limits and data it reads, before first use", "psych": "Mental model formation", "levels": "L1", "seen": "Claude Projects, Copilot", "gap": false}, {"id": "OR-03", "name": "Starter asks", "problem": "Empty box causes freeze", "solution": "3–4 concrete example requests to tap", "psych": "Blank-page anxiety, priming", "levels": "L1–L2", "seen": "ChatGPT, Gemini", "gap": false}, {"id": "OR-04", "name": "Outcome gallery", "problem": "People can't picture the result", "solution": "Browse finished outputs, start from one", "psych": "Concreteness effect", "levels": "L1", "seen": "Canva, Gamma", "gap": false}, {"id": "OR-05", "name": "Two-question setup", "problem": "Generic AI feels irrelevant", "solution": "Ask 1–2 tap questions, tailor defaults, show what was set", "psych": "Personalisation, endowment", "levels": "L1", "seen": "Duolingo, Perplexity Spaces", "gap": false}, {"id": "OR-06", "name": "Context-aware offer", "problem": "People don't know AI could help right now", "solution": "Offer help when a clear signal appears; easy to dismiss forever", "psych": "Timing, reactance", "levels": "L2", "seen": "Grammarly, Gmail", "gap": false}, {"id": "OR-07", "name": "Visible context", "problem": "People don't know what the AI is \"looking at\"", "solution": "Show the page/file/selection in use, removable", "psych": "Shared ground (common ground theory)", "levels": "L1–L2", "seen": "Cursor, Notion AI", "gap": false}, {"id": "OR-08", "name": "Agent identity card", "problem": "Agents feel faceless; unclear who did what", "solution": "Persistent name, role, scope and owner for each agent", "psych": "Anthropomorphism, accountability", "levels": "L3–L4", "seen": "Salesforce Agentforce, Devin", "gap": true}, {"id": "OR-09", "name": "Capability by doing", "problem": "Long feature tours get skipped", "solution": "Teach one ability inside the first real task", "psych": "Learning by doing, Zeigarnik", "levels": "L1–L2", "seen": "Linear, Arc", "gap": false}, {"id": "OR-10", "name": "Plain mode names", "problem": "Model names mean nothing", "solution": "Name modes by behaviour and time (\"Quick · Deep · Research\")", "psych": "Fluency heuristic", "levels": "L1", "seen": "ChatGPT, Perplexity", "gap": false}, {"id": "UN-01", "name": "Wait ladder", "problem": "One spinner for every wait length", "solution": "Match feedback to time: nothing <1s, one line 1–3s, steps 3–60s, leave-and-notify for minutes", "psych": "Perceived wait time", "levels": "L1–L4", "seen": "Claude, Perplexity", "gap": false}, {"id": "UN-02", "name": "Live writing", "problem": "Silence while a long answer forms", "solution": "Show text as it's produced, stable layout", "psych": "Occupied time feels shorter", "levels": "L1", "seen": "Most chat AIs", "gap": false}, {"id": "UN-03", "name": "Narrated work", "problem": "\"Thinking…\" says nothing", "solution": "Say the verb and the real object, with real counts", "psych": "Need for closure, transparency", "levels": "L2–L4", "seen": "Perplexity, Claude", "gap": false}, {"id": "UN-04", "name": "Openable steps", "problem": "Hidden reasoning breeds doubt", "solution": "Collapsible list of steps, each openable to show what it found", "psych": "Process transparency", "levels": "L2–L4", "seen": "Claude, o-series apps", "gap": false}, {"id": "UN-05", "name": "Leave and get pinged", "problem": "Long jobs trap people on screen", "solution": "Upfront duration, safe to leave, notify on done or blocked", "psych": "Autonomy, anticipation", "levels": "L4", "seen": "Deep research tools", "gap": false}, {"id": "UN-06", "name": "Confidence flags", "problem": "Everything looks equally sure", "solution": "Flag only the shaky parts, with reason and a quick check", "psych": "Calibrated trust", "levels": "L2–L3", "seen": "Document AI, invoice scanners", "gap": false}, {"id": "UN-07", "name": "What I understood", "problem": "Misread input leads to wrong answer", "solution": "Restate how input was read (image, voice, file) before answering", "psych": "Gulf of evaluation", "levels": "L1–L2", "seen": "Gemini Live", "gap": false}, {"id": "UN-08", "name": "Clarifying question", "problem": "Agent guesses on ambiguous asks", "solution": "Ask one targeted question before planning, with tappable answers", "psych": "Ambiguity aversion, cost of rework", "levels": "L2–L3", "seen": "Claude, Devin", "gap": true}, {"id": "UN-09", "name": "Freshness stamp", "problem": "Old output looks current", "solution": "Show when and from what it was generated; mark when stale", "psych": "Recency bias", "levels": "L2–L4", "seen": "Summaries in Slack, Notion", "gap": false}, {"id": "UN-10", "name": "Honest failure", "problem": "Errors are codes or dead ends", "solution": "What happened, why in one line, what's kept, one way forward", "psych": "Learned helplessness avoidance", "levels": "L1–L5", "seen": "— (common gap)", "gap": false}, {"id": "UN-11", "name": "Progress that never resets", "problem": "Corrections restart the whole job", "solution": "Keep finished work when instructions change mid-run", "psych": "Sunk cost, goal gradient", "levels": "L3–L4", "seen": "Cursor agent", "gap": false}, {"id": "CO-01", "name": "Instant stop", "problem": "Can't halt a runaway answer", "solution": "Stop sits where Send was, works immediately, keeps partial work", "psych": "Sense of agency", "levels": "L1–L4", "seen": "All major chat AIs", "gap": false}, {"id": "CO-02", "name": "Steer mid-run", "problem": "Must stop and restart to correct", "solution": "Add instructions while it works; it acknowledges what changed", "psych": "Perceived control", "levels": "L3–L4", "seen": "Cursor, Claude Code", "gap": false}, {"id": "CO-03", "name": "Retry without loss", "problem": "New try erases the old one", "solution": "Every try kept, switch between them", "psych": "Loss aversion", "levels": "L1–L2", "seen": "ChatGPT, Claude", "gap": false}, {"id": "CO-04", "name": "Edit the ask", "problem": "Retyping to change one detail", "solution": "Edit the original request in place, branch from there", "psych": "Effort minimisation", "levels": "L1", "seen": "ChatGPT, Claude", "gap": false}, {"id": "CO-05", "name": "One-tap dials", "problem": "Re-prompting for shorter/formal", "solution": "Direct controls for length, tone, detail; facts stay fixed", "psych": "Direct manipulation", "levels": "L1–L2", "seen": "Gmail, Notion AI", "gap": false}, {"id": "CO-06", "name": "Touch the output", "problem": "Copy-paste to fix one word", "solution": "Edit output in place; own edits are marked and protected", "psych": "IKEA effect, ownership", "levels": "L1–L2", "seen": "Canvas, Claude artifacts", "gap": false}, {"id": "CO-07", "name": "Suggest, don't overwrite", "problem": "AI changes land silently", "solution": "Changes shown as proposals; accept or reject each", "psych": "Status quo bias, agency", "levels": "L2–L3", "seen": "Google Docs suggestions, Cursor diffs", "gap": false}, {"id": "CO-08", "name": "Pick from options", "problem": "One answer feels arbitrary", "solution": "2–4 distinct versions, labelled by how they differ", "psych": "Choice architecture (small sets)", "levels": "L2", "seen": "Midjourney, Gmail replies", "gap": false}, {"id": "CO-09", "name": "Time travel", "problem": "Can't get back to a good version", "solution": "Version list labelled by the ask; restore adds a new version", "psych": "Reversibility lowers risk", "levels": "L1–L4", "seen": "Claude artifacts, v0", "gap": false}, {"id": "CO-10", "name": "Act on selection", "problem": "AI rewrites the whole thing", "solution": "Select a part, act only on that part, preview before replace", "psych": "Precision, locality", "levels": "L1–L2", "seen": "Notion, Word Copilot", "gap": false}, {"id": "CO-11", "name": "Take the wheel", "problem": "Watching an agent with no way in", "solution": "Live view, one tap to pause and take over, resume later", "psych": "Locus of control", "levels": "L4→L1", "seen": "OpenAI Operator, Claude in Chrome", "gap": false}, {"id": "CO-12", "name": "Standing instructions", "problem": "Repeating preferences every time", "solution": "Saved, visible, editable rules that shape every answer", "psych": "Consistency, defaults", "levels": "L1–L4", "seen": "Custom instructions in chat AIs", "gap": true}, {"id": "TR-01", "name": "Claim-level sources", "problem": "Can't verify which fact came from where", "solution": "Marker per claim, source preview with the exact passage", "psych": "Source credibility", "levels": "L2", "seen": "Perplexity, Claude", "gap": false}, {"id": "TR-02", "name": "Made-by-AI marker", "problem": "Can't tell AI output from human work", "solution": "Label naming the action; disappears once a human edits", "psych": "Disclosure norms", "levels": "L2–L4", "seen": "IBM products, Google Docs", "gap": false}, {"id": "TR-03", "name": "Why this?", "problem": "AI decisions feel arbitrary", "solution": "One tap to reasons with real numbers and the rule behind them", "psych": "Explainability, procedural fairness", "levels": "L2–L4", "seen": "Banking/fraud tools", "gap": false}, {"id": "TR-04", "name": "Targeted caution", "problem": "Generic warnings get ignored", "solution": "No blanket pop-ups; one quiet line plus an in-answer caveat only when stakes are high", "psych": "Warning fatigue, habituation", "levels": "L1–L2", "seen": "—", "gap": false}, {"id": "TR-05", "name": "Memory you can see", "problem": "Hidden memory feels creepy", "solution": "Show which memories were used; edit, delete, pause", "psych": "Privacy calculus", "levels": "L1–L4", "seen": "ChatGPT, Claude", "gap": false}, {"id": "TR-06", "name": "Fair consent", "problem": "Dark-pattern data choices", "solution": "Plain question, equal buttons, nothing pre-ticked, easy to revisit", "psych": "Default effect, reactance", "levels": "L1", "seen": "— (common gap)", "gap": false}, {"id": "TR-07", "name": "Off-the-record mode", "problem": "Fear of everything being saved", "solution": "Clearly marked session that isn't kept, with honest exceptions", "psych": "Psychological safety", "levels": "L1", "seen": "Temporary chats", "gap": false}, {"id": "TR-08", "name": "Specific feedback", "problem": "Thumbs down tells nothing", "solution": "Reason chips after rating, optional note, opt-in sharing", "psych": "Reciprocity, voice", "levels": "L1–L2", "seen": "ChatGPT, Claude", "gap": false}, {"id": "TR-09", "name": "Track record", "problem": "No basis for how much to trust an agent", "solution": "Show past accuracy/approval rate for this agent and task type", "psych": "Calibrated trust, social proof", "levels": "L3–L4", "seen": "— (gap)", "gap": true}, {"id": "TR-10", "name": "Show your sources list", "problem": "Unclear what the agent read or ignored", "solution": "List of inputs consulted and skipped, with reasons", "psych": "Completeness heuristic", "levels": "L2–L4", "seen": "Research agents (partial)", "gap": true}, {"id": "TR-11", "name": "Human in the loop label", "problem": "Unclear if a person reviewed this", "solution": "Mark output as AI-only, human-reviewed, or human-edited", "psych": "Authority, accountability", "levels": "L3–L4", "seen": "— (gap)", "gap": true}, {"id": "EF-01", "name": "Smart input box", "problem": "Cramped box, scattered tools", "solution": "Box grows with text, tools within reach, send disabled when empty", "psych": "Fitts's law, affordance", "levels": "L1", "seen": "All chat AIs", "gap": false}, {"id": "EF-02", "name": "Add context fast", "problem": "Re-explaining what's already on screen", "solution": "Drag, paste or attach files; chips show what's included", "psych": "Cognitive offloading", "levels": "L1", "seen": "Claude, ChatGPT", "gap": false}, {"id": "EF-03", "name": "Speak it", "problem": "Typing is slow or impossible", "solution": "Voice with live transcript; review before sending", "psych": "Accessibility, modality choice", "levels": "L1", "seen": "ChatGPT voice, Gemini", "gap": false}, {"id": "EF-04", "name": "Form, not prose", "problem": "People leave out what the AI needs", "solution": "Short fields and chips that build the request", "psych": "Structured elicitation", "levels": "L1", "seen": "Jasper, Copy.ai", "gap": false}, {"id": "EF-05", "name": "Improve my ask", "problem": "Weak prompts, weak results", "solution": "Optional rewrite of the request, changes marked, undo", "psych": "Scaffolding", "levels": "L2", "seen": "Midjourney, Leonardo", "gap": false}, {"id": "EF-06", "name": "One-tap jobs", "problem": "Common tasks need typing", "solution": "Named action chips on the item (summarise, reply, translate)", "psych": "Path of least resistance", "levels": "L1–L2", "seen": "Gmail, Slack AI", "gap": false}, {"id": "EF-07", "name": "Next-step chips", "problem": "Conversation dead-ends", "solution": "2–3 specific follow-ups drawn from the answer", "psych": "Momentum, Zeigarnik", "levels": "L2", "seen": "Perplexity", "gap": false}, {"id": "EF-08", "name": "Answer as interface", "problem": "Walls of text for structured data", "solution": "Tables, cards, charts with in-place controls", "psych": "Visual processing, chunking", "levels": "L1–L2", "seen": "Claude, Gemini", "gap": false}, {"id": "EF-09", "name": "Big output beside chat", "problem": "Long output buried in thread", "solution": "Side pane on desktop, full sheet on phone, chat stays live", "psych": "Spatial memory", "levels": "L1–L2", "seen": "Claude artifacts, ChatGPT canvas", "gap": false}, {"id": "DE-01", "name": "Plan first", "problem": "Agent starts doing the wrong thing", "solution": "Show goal, steps and what it will touch; edit before start", "psych": "Pre-commitment, planning fallacy", "levels": "L3", "seen": "Devin, Claude Code plan mode", "gap": false}, {"id": "DE-02", "name": "Point of no return", "problem": "Irreversible actions happen silently", "solution": "Pause before anything final: what, to whom, can it be undone; button names the action", "psych": "Loss aversion", "levels": "L3", "seen": "Agent tools, payments", "gap": false}, {"id": "DE-03", "name": "Autonomy dial", "problem": "One-size trust level", "solution": "Levels from ask-always to just-do-it, with real thresholds", "psych": "Graduated trust", "levels": "L1–L4", "seen": "Cursor, Claude Code permissions", "gap": false}, {"id": "DE-04", "name": "Receipt with undo", "problem": "No record of what the agent did", "solution": "One line per action, past tense, undo per line where possible", "psych": "Accountability, reversibility", "levels": "L4", "seen": "Zapier history, Gmail undo", "gap": false}, {"id": "DE-05", "name": "Graceful handoff", "problem": "Agent gets stuck or customer wants a human", "solution": "Hand to a named person with the facts gathered; no repeated story", "psych": "Fairness, effort justification", "levels": "L5", "seen": "Intercom Fin, Zendesk AI", "gap": false}, {"id": "DE-06", "name": "Agent inbox", "problem": "Many agents, no overview", "solution": "One place: status in words, \"needs you\" first, start new", "psych": "Attention management", "levels": "L4", "seen": "Agent dashboards", "gap": false}, {"id": "DE-07", "name": "Scheduled runs", "problem": "Recurring jobs need babysitting", "solution": "Schedule card with next run, pause, edit; report only what changed", "psych": "Habit loop, signal over noise", "levels": "L4", "seen": "Scheduled tasks in chat AIs", "gap": false}, {"id": "DE-08", "name": "Access request", "problem": "Agents get blanket access to tools", "solution": "Ask for the specific app and scope when needed; read vs write shown; revocable", "psych": "Least privilege, informed consent", "levels": "L3", "seen": "OAuth, MCP connectors", "gap": true}, {"id": "DE-09", "name": "Dry run", "problem": "Can't see effects before committing", "solution": "Simulate the whole run and show predicted changes (\"would update 412 records\")", "psych": "Risk perception, preview", "levels": "L3", "seen": "Terraform plan, DB migrations", "gap": true}, {"id": "DE-10", "name": "Budget guard", "problem": "Agent runs rack up hidden cost", "solution": "Set a cap before running, live spend meter, pause at threshold", "psych": "Mental accounting, pain of paying", "levels": "L3–L4", "seen": "Cloud billing, API dashboards", "gap": true}, {"id": "DE-11", "name": "Team of agents", "problem": "Multiple agents, unclear who did what", "solution": "Show agent-to-agent handoffs, ownership per step, one accountable lead", "psych": "Diffusion of responsibility", "levels": "L4", "seen": "Multi-agent frameworks (emerging)", "gap": true}];
+const NEEDS={OR:'Orientation',UN:'Uncertainty',CO:'Control',TR:'Trust',EF:'Effort',DE:'Delegation'};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const byId=Object.fromEntries(LIB.map(p=>[p.id,p]));
+const A=h=>`<div class="a"><div class="who"><span class="av">O</span>Offsite agent</div>${h}</div>`;
+const ASK=`<div class="u">Plan a 2-day offsite for the Design team in late January. 12 people, under ₹4 lakh.</div>`;
+const STEPS=[
+{id:'UN-08',scene:'You asked for an offsite but didn\'t say where. The agent could go anywhere.',q:'What should it do first?',
+ bad:{label:'Start planning right away',screen:ASK+A(`<p>Great, I'll plan it in Goa. Looking at flights for 12 now.</p><div class="status">◌ Searching flights</div>`),head:'It guessed Goa.',text:'Flights for 12 blow the budget, and you find out an hour later.'},
+ good:{label:'Ask one question first',screen:ASK+A(`<p>One question before I plan: what matters most?</p><div class="chips"><span class="chip on">Under 3 hours away</span><span class="chip">Lowest price</span><span class="chip">Somewhere new</span></div>`),head:'It asked once, with tap answers.',text:'Five seconds from you saves an hour of wrong work.'},
+ psych:'When a request can mean several things, one question costs less than undoing a wrong guess.'},
+{id:'DE-01',scene:'The agent now knows enough to begin.',q:'Before it acts, what should you see?',
+ bad:{label:'Get straight to work',screen:A(`<p>On it. Working on your offsite now.</p><div class="status">◌ Working</div>`),head:'It started without showing you anything.',text:'If its idea of the job is wrong, you learn that at the end.'},
+ good:{label:'Show a plan first',screen:A(`<p><b>My plan</b> for 12 people, under ₹4,00,000</p><div class="tree"><div>1 · Find dates all 12 are free</div><div>2 · Shortlist 3 venues under 3 hours</div><div>3 · Draft the invite</div><div>4 · Pay the deposit</div></div><div class="mini"><span class="p">Start · 4 steps</span><span>Edit a step</span></div>`),head:'You saw the plan before anything happened.',text:'Fixing a step now is one tap. Later, it means undoing work.'},
+ psych:'Committing to a plan up front catches wrong turns while they\'re still cheap.'},
+{id:'DE-08',scene:'To find dates, the agent has to look at 12 people\'s calendars.',q:'How should it get access?',
+ bad:{label:'Connect all apps in one tap',screen:A(`<p>To continue, connect your workspace.</p><div class="card"><b>Full access</b><div class="row2"><span class="m">Email, files, calendar, payments</span></div></div><div class="mini"><span class="p">Allow all</span></div>`),head:'It got the keys to everything.',text:'Email, files and payments, for a job that only needed calendars.'},
+ good:{label:'Ask for the calendar only',screen:A(`<p>I need one thing to find dates.</p><div class="card"><b>Team calendar</b><div class="row2"><span class="m">Read only · this task only</span></div></div><div class="mini"><span class="p">Allow</span><span>Not now</span></div>`),head:'It asked for one thing: read-only calendars.',text:'You see exactly what it can touch, so saying yes is easy.'},
+ psych:'People agree more easily when a request is small, specific and clearly limited.'},
+{id:'UN-04',scene:'It\'s checking 12 calendars and 30 venues. This takes a couple of minutes.',q:'What should you see while it works?',
+ bad:{label:'Keep it minimal',screen:A(`<div class="status">◌ Processing…</div>`),head:'Two minutes of "Processing…"',text:'Is it stuck? Most people refresh, or give up and start again.'},
+ good:{label:'Show each step',screen:A(`<div class="status">◌ Working · 1 min 40 s</div><div class="tree"><div><b>Calendars</b> <span class="ok">✓</span><small>All 12 free on 23–24 Jan</small></div><div><b>Venues</b> <span class="ok">✓</span><small>Read 30, kept 3</small></div><div><b>Room counts</b><small>Checking now</small></div><div><b>Invite</b><small>Next</small></div></div><div class="bar"><span style="width:62%"></span></div>`),head:'You watched real progress.',text:'Waiting feels shorter when you can see what\'s getting done.'},
+ psych:'Time spent waiting feels longer when nothing seems to be happening.'},
+{id:'UN-06',scene:'It found 3 venues. For one, the website and a review disagree on the number of rooms.',q:'How should it show the venues?',
+ bad:{label:'Keep the list clean',screen:A(`<p>Here are 3 venues for 23–24 Jan.</p><div class="card"><div class="row2"><b>Hillcrest Retreat</b><span class="r">₹3,62,000</span><span class="m">14 rooms</span></div><div class="row2"><b>Saltwater House</b><span class="r">₹3,95,000</span><span class="m">10 rooms</span></div><div class="row2"><b>The Orchard Stay</b><span class="r">₹2,80,000</span><span class="m">12 rooms</span></div></div>`),head:'Everything looked equally sure.',text:'You picked Saltwater House. It has 8 rooms. Four people have nowhere to sleep.'},
+ good:{label:'Flag the doubtful one',screen:A(`<p>Here are 3 venues for 23–24 Jan.</p><div class="card"><div class="row2"><b>Hillcrest Retreat</b><span class="r">₹3,62,000</span><span class="m">14 rooms</span></div><div class="row2"><b>Saltwater House</b><span class="r">₹3,95,000</span><span class="m">10 rooms?</span><span class="flag">The site says 10 rooms, a review says 8.</span></div><div class="row2"><b>The Orchard Stay</b><span class="r">₹2,80,000</span><span class="m">12 rooms</span></div></div>`),head:'Only the shaky fact got a flag.',text:'You know exactly what to double-check, and can trust the rest.'},
+ psych:'People over-trust confident-looking machines. A flag puts doubt where it belongs.'},
+{id:'DE-02',scene:'You chose Hillcrest Retreat. The deposit is ₹90,000, non-refundable after 10 Jan.',q:'What should the agent do?',
+ bad:{label:'Pay now to lock the venue',screen:A(`<p>Done. Deposit of ₹90,000 paid to Hillcrest Retreat.</p>`),head:'₹90,000 left without a yes.',text:'Even if it was right, you won\'t trust it with money again.'},
+ good:{label:'Wait for my yes',screen:A(`<div class="card gate"><b>Waiting for you</b><p style="margin:6px 0">Pay ₹90,000 deposit to Hillcrest Retreat</p><div class="warn">Can't be undone after 10 Jan</div><div class="mini"><span class="p">Pay ₹90,000</span><span>Not now</span></div></div>`),head:'It stopped before the point of no return.',text:'The button names exactly what happens. Your tap is a real decision.'},
+ psych:'Losing money hurts more than gaining it feels good. Final steps need a clear yes.'},
+{id:'DE-05',scene:'One teammate uses a wheelchair. Step-free rooms need a person at the venue to confirm.',q:'What should the agent do?',
+ bad:{label:'Be upfront that it can\'t',screen:A(`<p>Sorry, I can't help with accessibility requests.</p>`),head:'A dead end.',text:'You start over by phone and explain everything again.'},
+ good:{label:'Hand it to a person',screen:A(`<p>This needs a person. I've sent it to <b>Meera, events team at Hillcrest</b>, with the dates and the need.</p><div class="status">● Usually replies within 2 hours</div>`),head:'It handed over cleanly.',text:'A named person already has the facts. Nobody repeats the story.'},
+ psych:'Having to explain again feels unfair, and that feeling sticks to the product.'},
+{id:'DE-04',scene:'Over 2 hours, the agent held dates, sent invites and paid.',q:'How should it report back?',
+ bad:{label:'Keep it short',screen:A(`<p>All done! Your offsite is booked.</p>`),head:'All done, but what was done?',text:'Did invites reach the right people? You check everything by hand.'},
+ good:{label:'List every action',screen:A(`<p><b>What I did</b> · undo works for 24 hours</p><div class="log"><div><time>10:02</time><span>Read 12 calendars <em>· nothing changed</em></span><span></span></div><div><time>10:31</time><span>Held 23–24 Jan on 12 calendars</span><span class="x">Undo</span></div><div><time>10:33</time><span>Sent invite to 12 people</span><span class="x">Undo</span></div><div><time>11:58</time><span>Paid ₹90,000 deposit</span><em>Can't undo</em></div></div>`),head:'A clear receipt.',text:'Every action is visible, and the reversible ones can be undone.'},
+ psych:'Knowing you can reverse something makes it easier to hand it over.'}
+];
+const U=t=>`<div class="u">${t}</div>`;
+const S=t=>`<div class="status">${t}</div>`;
+const C=h=>`<div class="card">${h}</div>`;
+const M=(...l)=>`<div class="mini">${l.map((x,i)=>`<span${i===0?' class="p"':''}>${x}</span>`).join('')}</div>`;
+const CH=(...l)=>`<div class="chips">${l.map((x,i)=>`<span class="chip${i===0?' on':''}">${x}</span>`).join('')}</div>`;
+const R=(a,b,c)=>`<div class="row2"><b>${a}</b><span class="r">${b||''}</span>${c?`<span class="m">${c}</span>`:''}</div>`;
+const MISS=t=>`<div class="card" style="border-style:dashed;color:var(--muted)">${t}</div>`;
+const P=(id,scene,q,bl,bs,bh,bt,gl,gs,gh,gt)=>[id,{id,scene,q,bad:{label:bl,screen:bs,head:bh,text:bt},good:{label:gl,screen:gs,head:gh,text:gt}}];
+const PAT=Object.fromEntries([
+/* Orientation */
+P('OR-01','The team uses an AI assistant inside their planning tool.','Where should the assistant live?',
+ 'A button in every panel',`${C(R('Sidebar ✦','')+R('Toolbar ✦','')+R('Menu ✦','')+R('Footer ✦',''))}<p class="a">Four AI buttons, four names.</p>`,'Nobody knew which one to use.','Four entry points made it feel like four different tools.',
+ 'One door, same place everywhere',`${C(R('✦ Ask the agent','⌘J','Same spot on every page'))}${A('<p>Hi. I can see the offsite plan you have open.</p>')}`,'One door, one name.','People learned where it lives once, and found it every time.'),
+P('OR-02','Priya opens the agent for the first time.','What should she see before asking anything?',
+ 'A friendly "Ask me anything"',A('<p>Hi! Ask me anything.</p>'),'She asked it to book flights.','It can\'t, and she only found out after trying.',
+ 'What it can and can\'t do',A(`<p>I plan team events.</p>${C(R('Can','')+'<div class="m">Find dates, shortlist venues, draft invites</div>'+R('Can\'t','')+'<div class="m">Book flights · use Travel desk for that</div>')}`),'She knew its limits up front.','Her first ask fit what it does well.'),
+P('OR-03','The agent\'s box is empty.','How should it help someone start?',
+ 'Leave the box clean',`<div class="a" style="color:var(--muted);text-align:center;padding:60px 0">What can I help with?</div>`,'Blank-page freeze.','She typed "hi" and waited.',
+ 'Offer a few real asks',A(`<p>Try one of these:</p>${C(R('Plan a 2-day offsite for 12','')+R('Find a Friday team lunch spot','')+R('Draft an invite for the town hall',''))}`),'She tapped one and was off.','Real examples showed the kind of thing it does.'),
+P('OR-04','Priya wants an offsite agenda but can\'t picture one.','How should the agent help?',
+ 'Ask her to describe it',A('<p>Describe the agenda you want in detail.</p>'),'She didn\'t know what to write.','Describing something you can\'t picture is hard.',
+ 'Show finished examples',A(`<p>Start from one of these agendas:</p>${C(R('Strategy day','2 days','Workshops + dinner')+R('Team bonding','1 day','Games + lunch'))}${M('Use this')}`),'She picked by looking.','Seeing results beat describing them.'),
+P('OR-05','A new user opens the agent.','How should it get to know them?',
+ 'A long settings form',C(R('Role','')+R('Team size','')+R('Budget','')+R('Cities','')+R('Dietary needs','')+R('Travel policy',''))+M('Save 6 fields'),'She skipped it all.','Six fields felt like homework.',
+ 'Two tap questions',A(`<p>Question 1 of 2 · What do you plan most?</p>${CH('Offsites','Team lunches','Client events')}`),'Done in 10 seconds.','Then it showed what it had set, with Change.'),
+P('OR-06','Priya is writing a long invite by hand.','Should the agent offer help?',
+ 'Pop up a big suggestion',`<div class="card gate"><b>✦ Let AI rewrite your whole invite!</b>${M('Rewrite now')}</div>`,'She closed it, annoyed.','It interrupted her mid-sentence, with no way to stop it for good.',
+ 'A small offer at a pause',`${C('<div class="m">Invite · 380 words</div>')}${A(`<p>This invite is 380 words. Shorten to 120?</p>${M('Shorten','Not now','Stop these tips')}`)}`,'A helpful nudge she could dismiss.','It said why now, and offered a way to switch it off.'),
+P('OR-07','Priya asks the agent about "this venue".','How does she know what it\'s looking at?',
+ 'It just answers',`${U('Is this venue good for us?')}${A('<p>Yes, it looks great for your team!</p>')}`,'Which venue?','She couldn\'t tell what it read, so she couldn\'t trust the answer.',
+ 'Show what it\'s looking at',`<div class="chip on" style="justify-self:start">Looking at: Hillcrest Retreat ✕</div>${U('Is this venue good for us?')}${A('<p>For 12 people, yes: 14 rooms and step-free access.</p>')}`,'She saw it read the right page.','A removable chip shows the context it\'s using.'),
+P('OR-08','Three agents work for the Design team.','How should one introduce itself?',
+ 'As "AI Assistant"',A('<p>Hi, I\'m your AI Assistant.</p>'),'Which one? Who set it up?','When something went wrong, nobody knew whose agent it was.',
+ 'Name, job and owner',A(C(R('Offsite agent','')+'<div class="m">Plans team events · set up by Priya · can read calendars, draft emails</div>')),'Clear identity.','People knew what it does and who answers for it.'),
+P('OR-09','Priya has never used the agent\'s budget feature.','How should she learn it?',
+ 'A 6-step product tour',C('<b>Tour · step 1 of 6</b><div class="m">Welcome to Budgets! Click Next to learn more.</div>')+M('Next'),'She skipped the tour.','Then never found the feature.',
+ 'Teach it inside the task',A(`<p>Venues found. Tip: set a cap and I'll hide anything over it.</p>${M('Set ₹4,00,000 cap')}`),'She learned it by using it.','The tip appeared when it was useful.'),
+P('OR-10','The agent has three ways of working.','How should it name them?',
+ 'By model name',C(R('gpt-x-mini','')+R('gpt-x-pro','')+R('deep-r1',''))+'<p class="a">Choose a model</p>','She guessed.','Model names say nothing about speed or what you get.',
+ 'By what they do',C(R('Quick','seconds','Short answers')+R('Thorough','1 min','Checks more venues')+R('Research','10 min','Reads and cites sources')),'She chose in a second.','Plain names with time told her what to expect.'),
+/* Uncertainty */
+P('UN-01','Some asks take a second, some take an hour.','How should waiting look?',
+ 'The same spinner for everything',S('◌ Loading…'),'Every wait felt the same.','She couldn\'t tell a 2-second wait from a 20-minute one.',
+ 'Match feedback to the wait',C(R('Under 1 s','','Nothing at all')+R('1–3 s','','One specific line')+R('3–60 s','','Steps you can open')+R('Minutes','','Leave, get notified')),'Waits matched their length.','Short stayed quiet, long became visible.'),
+P('UN-02','The agent is writing a long summary.','How should the answer appear?',
+ 'All at once when done',S('◌ Writing… 18 s'),'18 seconds of nothing.','Then a wall of text.',
+ 'As it\'s written',A('<p>Here\'s the plan for 23–24 Jan. Day one starts with a bus from the office at 8am, then▍</p>'),'Reading started at once.','Waiting turned into reading.'),
+P('UN-03','The agent is busy.','What should its status say?',
+ '"Processing…"',S('◌ Processing…'),'Processing what?','No way to know if it\'s stuck.',
+ 'What it\'s doing, to what',S('◌ Reading Hillcrest\'s site · page 3 of 5'),'Real work, visible.','A verb, a real object and a count.'),
+P('UN-05','The research will take about 2 hours.','What should the agent say?',
+ 'Ask her to keep it open',A('<p class="warn">Please keep this window open.</p>'),'Stuck at her desk.','She couldn\'t leave for 2 hours.',
+ 'Say it\'s safe to leave',A(`<p>About 2 hours. Safe to close · I'll notify you when it's done or if I need you.</p>${M('Notify me ✓')}`),'She went on with her day.','A notification brought her back.'),
+P('UN-07','Priya sends a photo of a venue floor plan.','What should the agent do first?',
+ 'Answer straight away',`${U('📎 floorplan.jpg · Enough room?')}${A('<p>Yes, plenty of room.</p>')}`,'It misread the plan.','It counted 4 meeting rooms. There are 2.',
+ 'Say what it read first',`${U('📎 floorplan.jpg · Enough room?')}${A('<p>From your plan: 2 meeting rooms, 1 hall for 40. So yes, if workshops share the hall.</p>')}`,'She could check its reading.','A wrong reading would have shown before the answer.'),
+P('UN-09','Priya opens yesterday\'s venue summary.','How should it show its age?',
+ 'Show it as is',A(C(R('Hillcrest','₹3,62,000','Available'))),'Stale and didn\'t say so.','The price went up overnight.',
+ 'Stamp when and from what',A(C(R('Hillcrest','₹3,62,000','Available'))+'<div class="m">From venue site · 26 Nov, 4pm · may have changed</div>')+M('Refresh'),'She knew to refresh.','A time stamp turned old into honest.'),
+P('UN-10','The venue site is down.','What should the agent say?',
+ 'Show the error',A('<p>Error 503: upstream_timeout</p>'),'A dead end.','A code nobody can act on.',
+ 'Say what, why, and what next',A(`<p>I couldn't reach Hillcrest's site. It seems to be down.</p><div class="m">Your other 2 venues are saved.</div>${M('Try again in 5 min','Email the venue')}`),'She knew what to do.','What happened, what\'s kept, one way forward.'),
+P('UN-11','Midway, Priya adds "must have a pool".','What happens to the work done?',
+ 'Start over',S('◌ Restarting · venue 0 of 30'),'All progress lost.','It threw away 20 venues already checked.',
+ 'Keep it and adjust',A(`<p>Got it: pool required. Keeping the 20 venues already checked.</p>${S('◌ Checking pools · venue 21 of 30')}`),'Nothing reset.','Her change landed without losing work.'),
+/* Control */
+P('CO-01','The agent is writing the wrong thing.','How does Priya stop it?',
+ 'She can\'t, it finishes',`${A('<p>Planning flights to Goa for 12 people, comparing airlines▍</p>')}<div class="m">Send button disabled</div>`,'She had to wait it out.','No Stop meant watching it waste time.',
+ 'Stop, right where Send was',`${A('<p>Planning flights to Goa for 12 people</p>')}<div class="m">■ Stopped · kept what was written</div>`,'Stopped instantly.','The part already written stayed.'),
+P('CO-02','The agent is mid-search.','Priya wants to add "near a beach". How?',
+ 'Stop and start again',`${S('◌ Searching · venue 8 of 30')}${M('Stop')}`,'She lost the search.','The only way to change it was to restart.',
+ 'Add to the running task',`${S('◌ Searching · venue 8 of 30')}${U('Also near a beach')}${A('<p>Got it, near a beach. Continuing from venue 8.</p>')}`,'Steered without stopping.','It took the change and kept going.'),
+P('CO-03','Priya didn\'t like the agent\'s draft.','What happens when she asks again?',
+ 'The old draft is replaced',`${A('<p>New draft: "Team, pack for 2 days…"</p>')}`,'The first draft was gone.','It had one line she liked.',
+ 'Every try is kept',`${A('<p>New draft: "Team, pack for 2 days…"</p>')}<div class="m">‹ 2 / 2 ›</div>`,'She could go back.','Nothing was lost by trying again.'),
+P('CO-04','She meant 14 people, not 12.','How does she fix her ask?',
+ 'Retype everything',`${U('Plan a 2-day offsite for the Design team in late January. 14 people, under ₹4 lakh.')}<div class="m">Typed again from scratch</div>`,'Tedious.','One number, the whole message retyped.',
+ 'Edit the original ask',`${U('Plan a 2-day offsite… <b>14</b> people, under ₹4 lakh. ✎')}<div class="m">Edited · new answer below</div>`,'One tap, one change.','She fixed a detail in place.'),
+P('CO-05','The invite is too formal.','How does she change the tone?',
+ 'Type a new instruction',`${U('Make it friendlier but keep the dates and the bus time')}`,'Extra work, and it dropped the bus time.','Re-prompting loses details.',
+ 'One-tap controls',`${A('<p>"Hey team! Offsite 23–24 Jan, bus at 8am 🚌"</p>')}${CH('Friendlier','Shorter','More formal')}<div class="m">Kept: dates, bus time</div>`,'Friendlier, facts kept.','Direct controls, with the facts that stayed marked.'),
+P('CO-06','The agent\'s invite has one wrong word.','How does Priya fix it?',
+ 'Copy it to another app',A('<p>Copy the text to edit it elsewhere.</p>')+M('Copy'),'Copy, fix, paste back.','A one-word fix took three steps.',
+ 'Edit it in place',A('<p>"Bus leaves at <u>7:30am</u>." <span class="m">· 1 edit by you · Revert</span></p>'),'Fixed where it was.','Her edit was marked and protected.'),
+P('CO-07','The agent wants to improve the agenda.','How should its changes arrive?',
+ 'Apply them directly',A('<p>I\'ve updated your agenda.</p>'),'What changed?','Her careful wording was overwritten.',
+ 'Suggest each change',A(`<p><s>Lunch at 1pm</s> <u>Lunch at 12:30pm</u></p>${M('Accept','Reject')}<div class="m">2 more suggestions · nothing changed yet</div>`),'She decided each one.','Proposals, not overwrites.'),
+P('CO-08','Priya wants a tagline for the offsite.','How many should the agent give?',
+ 'One best answer',A('<p>"Recharge and Reconnect"</p>'),'Felt arbitrary.','No way to see other directions.',
+ 'A few different takes',A(C(R('Short','','"Two days. One team."')+R('Warm','','"Time to catch up, properly."')+R('Playful','','"Out of office, into the hills."'))),'She picked one, fast.','Labelled options showed how each differed.'),
+P('CO-09','Priya preferred an earlier version of the plan.','Can she get it back?',
+ 'Only the latest exists',A('<p>Plan v5</p><div class="m">No history</div>'),'v3 was gone.','She had to rebuild it by memory.',
+ 'Version history',C(R('v5','Now','"Add a pool"')+R('v4','','"Cheaper venues"')+R('v3','','"Under 3 hours away"'))+M('Restore v3'),'Restored in a tap.','Each version was labelled by the ask that made it.'),
+P('CO-10','One sentence in the invite is clunky.','What should the agent rewrite?',
+ 'The whole invite',A('<p>I rewrote your invite.</p><div class="m">All 6 paragraphs changed</div>'),'Everything changed.','She only wanted one sentence fixed.',
+ 'Only what she selected',A(`<p>Selected: "Please kindly be informed…"</p><p>→ "Quick heads-up:"</p>${M('Replace','Try again')}`),'Precise.','Only the selection changed, after a preview.'),
+P('CO-11','The agent is filling a venue booking form.','How much can Priya see?',
+ 'Nothing until done',S('◌ Working in the background'),'No way in.','It typed the wrong date and she couldn\'t stop it.',
+ 'A live view and Take over',`${C('<div class="m">Live · venue booking form</div>'+R('Dates','23–24 Jan'))}${S('Filling dates')}${M('Take over','Stop')}`,'She could step in.','One tap paused the agent and gave her the controls.'),
+P('CO-12','Priya always wants vegetarian options and no Fridays.','How should the agent remember?',
+ 'She repeats it each time',U('Again: veg options, and no Fridays please'),'Every time.','Forgetting preferences felt careless.',
+ 'Visible standing rules',C('<b>Your rules</b><div class="m">Always include veg options · Avoid Fridays</div>')+M('Edit rules'),'Set once, visible, editable.','The rules shaped every plan.'),
+/* Trust */
+P('TR-01','The agent says Hillcrest is step-free.','How can Priya check?',
+ 'Take its word',A('<p>Hillcrest is fully step-free.</p>'),'No way to verify.','The teammate\'s access depends on this.',
+ 'A source on each claim',A('<p>Hillcrest is fully step-free.<sup style="color:var(--blue)">1</sup></p><div class="m">1 · hillcrest.example/access · "All ground-floor rooms are step-free"</div>'),'She checked in seconds.','The exact line it came from.'),
+P('TR-02','The team gets a summary of the venue shortlist.','How do they know the agent wrote it?',
+ 'No label',A('<p>Hillcrest is the best fit.</p>').replace('<div class="who"><span class="av">O</span>Offsite agent</div>',''),'They assumed Priya wrote it.','It read like her recommendation.',
+ 'Name what the AI did',`<div class="chip" style="justify-self:start">✦ Summarised by the agent · not checked</div><p class="a">Hillcrest is the best fit.</p>`,'Clear authorship.','The label named the action and what wasn\'t checked.'),
+P('TR-03','The agent marked an expense "Needs review".','Why?',
+ 'Just the flag',A(C(R('Venue deposit','₹90,000','Needs review'))),'Why though?','It felt arbitrary.',
+ 'One tap to the reason',A(C(R('Venue deposit','₹90,000','Needs review'))+'<div class="m">Why: over the ₹50,000 single-payment limit in the travel policy. A manager approves.</div>'),'She knew what to do.','Real numbers, the rule, and who decides.'),
+P('TR-04','The agent gives a venue recommendation.','How should it warn about mistakes?',
+ 'A pop-up before every answer',`<div class="card gate"><b>AI can make mistakes.</b>${M('I understand')}</div>`,'Tapped without reading.','By the third time, nobody read it.',
+ 'One quiet line, plus caveats when it matters',`${A('<p>Hillcrest fits best.</p><div class="m">Accessibility details: confirm with the venue.</div>')}<div class="m" style="text-align:center">The agent can make mistakes.</div>`,'Warnings people read.','Specific caution only where stakes are high.'),
+P('TR-05','The agent seems to know Priya avoids Fridays.','How?',
+ 'It just knows',A('<p>I avoided Fridays, as usual.</p>'),'Creepy.','What else does it remember?',
+ 'Show which memories it used',A('<p>I avoided Fridays.</p><div class="m">Used 1 memory · "Avoids Friday events"</div>')+M('View memories','Pause memory'),'Visible and in her control.','She could edit, delete or pause it.'),
+P('TR-06','First use. The agent needs a data choice.','How should it ask?',
+ 'Pre-ticked "Help us improve"',C('<div class="m">☑ Help us improve our services</div>')+M('Continue'),'She didn\'t notice.','Her chats went into training.',
+ 'A plain question, two equal buttons',C('<b>Use your chats to train our AI?</b><div class="m">Change any time in Settings → Data</div>')+`<div class="mini"><span>Yes</span><span>No</span></div>`,'A real choice.','Nothing chosen for her, easy to change later.'),
+P('TR-07','Priya wants to ask about a teammate\'s private situation.','How can she ask privately?',
+ 'Every chat is saved',A('<p>Saved to history and memory.</p>'),'She didn\'t ask.','Fear of it being kept stopped her.',
+ 'An off-the-record chat',`<div class="chip on" style="justify-self:start">👻 Temporary · not saved to history or memory</div>${A('<p>Go ahead. This chat won\'t be kept.</p>')}`,'Safe to ask.','Clearly marked, with honest exceptions.'),
+P('TR-08','The agent\'s venue pick was off.','How does Priya tell it?',
+ 'Thumbs down only',A('<p>Hillcrest fits best.</p>')+'<div class="m">👍 👎</div>','It learned nothing.','A thumb can\'t say what was wrong.',
+ 'Thumbs, then reasons',A('<p>Hillcrest fits best.</p>')+'<div class="m">👎 · What was wrong?</div>'+CH('Too far','Over budget','Wrong dates'),'Useful feedback.','One tap told it what to fix.'),
+P('TR-09','A new agent offers to pay vendors for you.','How much should Priya trust it?',
+ 'No history shown',A('<p>Ready to pay vendors.</p>'),'Blind trust.','No basis to say yes or no.',
+ 'Show its track record',A(C(R('Last 30 tasks','','28 approved as is · 2 edited'))+'<p>Ready to pay vendors.</p>'),'Calibrated trust.','Past accuracy for this kind of task.'),
+P('TR-10','The agent recommends Hillcrest.','What did it look at?',
+ 'Just the answer',A('<p>Hillcrest is best.</p>'),'Did it check reviews?','She couldn\'t tell what it ignored.',
+ 'Sources read and skipped',A('<p>Hillcrest is best.</p><div class="m">Read: 3 venue sites, 12 reviews · Skipped: 2 sites that wouldn\'t load</div>'),'She saw the gaps.','What it read, and what it couldn\'t.'),
+P('TR-11','The final plan goes to the whole team.','Has a person checked it?',
+ 'No indication',C('<b>Offsite plan</b><div class="m">23–24 Jan · Hillcrest</div>'),'Everyone assumed Priya checked.','She hadn\'t.',
+ 'Say who reviewed it',C('<b>Offsite plan</b><div class="m">23–24 Jan · Hillcrest</div>')+'<div class="chip" style="justify-self:start">Planned by agent · reviewed by Priya</div>','Clear accountability.','Readers knew a person signed off.'),
+/* Effort */
+P('EF-01','Priya types a long request on her phone.','How should the input behave?',
+ 'A one-line box',`<div class="card"><div class="m">…late January. 12 people, under ₹4 lakh and vegetari</div></div>`,'She couldn\'t see what she wrote.','Text scrolled out of view in a one-line box.',
+ 'A box that grows',`<div class="card">Plan a 2-day offsite for the Design team in late January. 12 people, under ₹4 lakh, vegetarian options.<div class="mini"><span>+</span><span>🎤</span><span class="p">Send</span></div></div>`,'Everything in view.','It grew with the text, tools in reach.'),
+P('EF-02','The venue brochure is a PDF on her laptop.','How does she share it?',
+ 'Paste the text in',U('(pasted 4 pages of brochure text…)'),'Messy.','Tables and prices broke when pasted.',
+ 'Attach it, see it attached',`<div class="chip on" style="justify-self:start">📄 hillcrest-brochure.pdf · 4 pages ✕</div>${U('Is this within budget?')}`,'One drag.','A chip shows what\'s included.'),
+P('EF-03','Priya is walking to a meeting.','How can she ask?',
+ 'Type only',`<div class="card"><div class="m">Type a message…</div></div>`,'She waited until later.','Typing while walking wasn\'t an option.',
+ 'Speak, then check',`${S('● Listening · 0:06')}${U('Book the bus for 8am on the twenty third')}<div class="m">Check the words, then send</div>`,'Asked on the move.','She saw what was heard before sending.'),
+P('EF-04','People keep forgetting to give a budget.','How should the agent ask for details?',
+ 'A blank box',`<div class="card"><div class="m">Describe your event…</div></div>`,'Half the asks lacked a budget.','It had to ask again every time.',
+ 'A short form',C(R('People','12')+R('Budget','₹4,00,000')+R('When','Late Jan'))+M('Plan it'),'Complete asks.','Fields made sure it got what it needs.'),
+P('EF-05','Priya typed "offsite plz".','Should the agent improve her ask?',
+ 'Silently rewrite it',A('<p>Planning a 3-day luxury retreat in Goa…</p>'),'Not what she meant.','A hidden rewrite changed her intent.',
+ 'Offer, show the change',`${U('offsite plz <u>for 12, 2 days, under ₹4 lakh</u>')}<div class="m">Improved · 3 additions · Undo</div>`,'Better ask, her call.','Additions marked, easy to undo.'),
+P('EF-06','A 40-message thread about the offsite.','How does Priya catch up?',
+ 'Ask in her own words',`<div class="card"><div class="m">Type a request…</div></div>`,'She had to think of how to ask.','A common job needed typing.',
+ 'One-tap actions on the thread',CH('Summarise','Draft reply','Translate')+A('<p><b>Summary of 40 messages</b> · venue chosen, bus booked, menu still open</p>'),'Caught up in a tap.','Common jobs, one tap away.'),
+P('EF-07','The agent finished the venue list.','What happens next?',
+ 'Nothing',A('<p>Here are 3 venues.</p>'),'Dead end.','She had to figure out the next step.',
+ 'Suggest next steps',A('<p>Here are 3 venues.</p>')+'<div class="m">Ask next</div>'+CH('Compare prices','Check availability','Draft the invite'),'Kept moving.','Next steps drawn from the answer.'),
+P('EF-08','Priya asks for a price comparison.','How should the answer look?',
+ 'A paragraph',A('<p>Hillcrest is ₹3,62,000 for 14 rooms, Saltwater ₹3,95,000 for 10, and Orchard ₹2,80,000 for 12, with Orchard closest…</p>'),'Hard to compare.','Numbers buried in prose.',
+ 'A table she can sort',A(C(R('Orchard','₹2,80,000','12 rooms')+R('Hillcrest','₹3,62,000','14 rooms')+R('Saltwater','₹3,95,000','10 rooms'))+'<div class="m">Sorted by price ▾</div>'),'Compared at a glance.','The answer took the shape of the data.'),
+P('EF-09','The agent drafts a 2-page agenda.','Where should it appear?',
+ 'In the chat thread',A('<p>Day 1 · 8:00 Bus · 10:30 Check-in · 11:00 Workshop · 13:00 Lunch · 14:00 … (2 pages)</p>'),'Buried in the chat.','Scrolling up to find it again.',
+ 'In a panel beside the chat',A(C('<b>Offsite agenda</b><div class="m">Document · v1 · Open ›</div>')),'Easy to find and edit.','The chat stayed live beside it.'),
+/* Delegation */
+P('DE-03','Priya trusts the agent with small things.','How should she set its freedom?',
+ 'All or nothing',C('<b>Agent permissions</b><div class="m">○ Off   ● Full access</div>'),'Too much or too little.','Full access meant it could also pay.',
+ 'Levels with real limits',C('<b>Autonomy</b>'+CH('Ask me','Suggest','Up to ₹10,000','Hands off')+'<div class="m">Payments over ₹10,000 wait for you</div>'),'Freedom with a line.','A clear threshold in rupees.'),
+P('DE-06','Priya runs 4 agents.','How does she keep track?',
+ 'Check each one',`<div class="m">Open each agent to see its status</div>${C(R('Offsite agent',''))}`,'She missed a blocked one.','It had been waiting for her for 2 days.',
+ 'One inbox, needs-you first',C(R('Needs you · Offsite agent','','Approve ₹90,000')+R('Running · Expenses','','Step 3 of 5')+R('Done · Lunch','','Booked')),'Nothing slipped.','Waiting agents rose to the top.'),
+P('DE-07','The agent checks venue prices every Monday.','How should it report?',
+ 'A full report every week',A('<p>Weekly report: checked 30 venues, 30 prices, 0 changes, full list attached…</p>'),'Noise.','She stopped reading it.',
+ 'Only what changed',A(C(R('Monday check','','Hillcrest dropped ₹20,000 · fits your budget'))+'<div class="m">Next run Mon · Pause · Edit</div>'),'Signal, not noise.','One line, only when it matters.'),
+P('DE-09','The agent is about to send invites and block calendars.','How can Priya see the effects first?',
+ 'Run it and see',A('<p>Done. Sent and blocked.</p>'),'Surprise effects.','It blocked a client meeting.',
+ 'A dry run first',A(C('<b>Preview · nothing done yet</b>'+R('Email','12 people')+R('Calendar holds','12 people, 2 days')+R('Conflicts','1','Asha has a client call'))),'Caught it before it happened.','Every effect shown before running.'),
+P('DE-10','Each agent search costs money.','How should cost show?',
+ 'Bill at month end',A('<p>Searching 200 venues…</p>'),'A surprise bill.','₹4,000 in searches nobody saw.',
+ 'A cap and a live meter',A(`<div class="m">Spend this task</div><div class="bar"><span style="width:40%"></span></div><div class="m">₹200 of ₹500 cap · pauses at the cap</div>`),'No surprises.','A limit set before it started.'),
+P('DE-11','Three agents split the offsite work.','How does Priya know who did what?',
+ 'One merged answer',A('<p>Everything\'s booked.</p>'),'Who booked the bus?','When it went wrong, nobody owned it.',
+ 'Handoffs and one lead',A(`<div class="tree"><div><b>Lead: Offsite agent</b></div><div>Venue agent · booked Hillcrest <span class="ok">✓</span></div><div>Travel agent · booked bus <span class="ok">✓</span></div></div>`),'Clear ownership.','Each step had an owner, and one agent answered for all.')
+]);
+
+for(const s of STEPS)PAT[s.id]=s;
+let single=null, spick=null;
+let step=-1, picks=[], mview=0, dev='phone';
+
+function screen(o){const w=`<div class="win"><div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>offsite-agent.app · Design team</span></div><div class="ios" aria-hidden="true"><div class="sbar"><span>9:41</span><em>●●● ▮</em></div><div class="inav"><i>≡</i><b>Offsite agent</b><i>✎</i></div></div><div class="thread">${o.screen}</div><div class="comp" aria-hidden="true"><span>Reply…</span><span class="mode">Thinking</span><span class="stop"></span></div></div>`;return dev==='web'?`<div class="lap">${w}<div class="base" aria-hidden="true"></div></div>`:w}
+const devSwitch=()=>'';const _unusedSwitch=()=>`<div class="devs" role="group" aria-label="View on">${[['phone','Phone'],['web','Laptop']].map(([k,l])=>`<button aria-pressed="${dev===k}" data-dev="${k}">${k==='phone'?'<svg width="12" height="16" viewBox="0 0 12 16" aria-hidden="true"><rect x="1" y="1" width="10" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>':'<svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><rect x="3" y="1" width="12" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M1 12.5h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'}${l}</button>`).join('')}</div>`;
+
+function draw(){
+  const st=document.getElementById('stage');
+  if(step<0){
+    st.innerHTML=`<div class="stage"><div><h1 class="display">Teach an agent some manners</h1><p class="lead">An agent is planning your team's offsite. Eight times, it could act one of two ways. You pick.</p><div class="caps"><button class="cap pri" data-act="start">Start</button><a class="cap sec" href="#library">Browse 64 patterns</a></div></div>
+    <div class="object" aria-hidden="true"><svg viewBox="0 0 200 200"><rect x="10" y="40" width="180" height="120" rx="36" fill="var(--ink)"/><rect x="38" y="97" width="124" height="6" rx="3" fill="#4d4d4d"/><rect x="38" y="97" width="84" height="6" rx="3" fill="var(--blue)"/>${[38,79,121,162].map((x,i)=>`<circle cx="${x}" cy="100" r="3.5" fill="${i<2?'#52aeff':'#8f8f8f'}"/>`).join('')}<circle cx="121" cy="100" r="15" fill="#fafafa"/><circle cx="121" cy="100" r="5" fill="var(--blue)"/></svg></div>
+    <div class="rail"><div><b>8 moments</b>Each one a real decision an agent faces.</div><div><b>Two screens</b>Pick the one the agent should show.</div><div><b>One reason</b>See the pattern and the psychology behind it.</div></div></div>`;
+    return;
+  }
+  if(step>=STEPS.length){
+    const g=picks.filter(x=>x==='good').length;
+    st.innerHTML=`<div class="end"><div class="inset"><p class="label">Your result</p><div class="score">${g}/8</div><p class="proof">${g>=7?'You\'d trust this agent with ₹90,000.':g>=4?'A few habits to fix before it handles money.':'This agent needs a lot more manners.'} <span>Here's what each moment was teaching.</span></p><div class="caps"><button class="cap pri" data-act="restart">Play again</button><a class="cap sec" href="#library">See all 64 patterns</a></div></div>
+    <div class="rows">${STEPS.map((s,i)=>`<div><span class="i">${String(i+1).padStart(2,'0')}</span><span><b>${esc(byId[s.id].name)}</b><small>${esc(s.psych)}</small></span><span class="${picks[i]==='good'?'ok':''}" aria-label="${picks[i]==='good'?'Good call':'Missed'}">${picks[i]==='good'?'✓':'–'}</span></div>`).join('')}</div></div>`;
+    return;
+  }
+  st.innerHTML=momentHTML(STEPS[step],picks[step],step%2===1,{label:`Moment ${step+1} of 8`,track:true,next:step===7?'See my result':'Next moment',back:step>0});
+}
+function momentHTML(s,pick,flip,o){
+  const opts=[['bad',s.bad],['good',s.good]]; if(flip)opts.reverse();
+  const res=pick?s[pick]:null;
+  const nm=byId[s.id];
+  return `<div class="moment">
+   ${o.track?`<div class="track" role="img" aria-label="${o.label}">${STEPS.map((_,i)=>`<span class="${i<step?'d':i===step?'n':''}"></span>`).join('')}</div>`:''}
+   <div class="mhead"><div><p class="label">${o.label}</p><h1 class="heading">${esc(s.q)}</h1></div><p class="scene">${esc(s.scene)}</p></div>
+   <div class="mtools"><small>Two versions of the same moment. Pick the one the agent should show.</small>${devSwitch()}</div>
+   <div class="duel dev-${dev}${pick?' picked':''}">${opts.map(([k,x],i)=>`<div class="opt" role="button" tabindex="0" data-pick="${k}" aria-pressed="${pick===k}"><div class="olab"><span class="k">${'AB'[i]}</span>${esc(x.label)}${pick===k?`<span class="pick-tag ${k}">${k==='good'?'Good call':'Risky'}</span>`:''}</div>${screen(x)}</div>`).join('')}</div>
+   <div class="vwrap">${pick?`<div class="verdict" id="verdict" aria-live="polite"><div><p class="proof">${esc(res.head)} <span>${esc(res.text)}</span></p><div class="caps"><button class="cap pri" data-act="${o.nextAct||'next'}">${o.next}</button>${o.back?`<button class="cap sec" data-act="${o.backAct||'back'}">${o.backLabel||'Previous'}</button>`:''}</div></div>
+     <div class="tile"><span class="face"></span><small>The pattern · ${s.id}</small><h3>${esc(nm.name)}</h3><p>${esc(s.psych||nm.psych)}</p></div></div>`
+   :`<p class="tapnote">Tap A or B.</p>${o.back?`<div style="text-align:center"><button class="back" data-act="${o.backAct||'back'}">${o.backLabel||'Previous moment'}</button></div>`:''}`}</div>
+  </div>`;
+}
+function drawSingle(){
+  const st=document.getElementById('single');
+  if(!single){st.innerHTML='';return;}
+  const s=PAT[single], i=LIB.findIndex(p=>p.id===single);
+  st.innerHTML=momentHTML(s,spick,i%2===1,{label:`${single} · ${NEEDS[single.slice(0,2)]} · ${i+1} of ${LIB.length}`,next:'Next pattern',nextAct:'snext',back:true,backAct:'slib',backLabel:'Back to library'});
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-dev],[data-act],[data-mv],[data-pick],[data-need],[data-lv],[data-try]');
+  if(!t)return;
+  const top=()=>window.scrollTo({top:0});
+  if(t.dataset.dev){dev=t.dataset.dev;draw();drawSingle();}
+  else if(t.dataset.act==='snext'){const i=LIB.findIndex(p=>p.id===single);single=LIB[(i+1)%LIB.length].id;spick=null;drawSingle();top();}
+  else if(t.dataset.act==='slib'){location.hash='library';}
+  else if(t.dataset.pick&&single&&t.closest('#single')){spick=t.dataset.pick;drawSingle();const v=document.getElementById('verdict');v&&v.getBoundingClientRect().top>innerHeight-120&&v.scrollIntoView({block:'center'});}
+  else if(t.dataset.pick){picks[step]=t.dataset.pick;mview=[...document.querySelectorAll('.opt')].indexOf(t);draw();const v=document.getElementById('verdict');if(v){const r=v.getBoundingClientRect();if(r.top>innerHeight-120)v.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});}}
+  else if(t.dataset.act==='start'){step=0;mview=0;draw();top();}
+  else if(t.dataset.act==='next'){step++;mview=0;draw();top();}
+  else if(t.dataset.act==='back'){step--;mview=0;draw();top();}
+  else if(t.dataset.act==='restart'){step=0;picks=[];mview=0;draw();top();}
+  else if(t.dataset.need!==undefined){needF=t.dataset.need;lib();}
+  else if(t.dataset.lv!==undefined){lvF=t.dataset.lv;lib();}
+  else if(t.dataset.try){single=t.dataset.try;spick=null;drawSingle();location.hash==='#try'?top():location.hash='try';}
+});
+document.addEventListener('keydown',e=>{const o=e.target.closest&&e.target.closest('.opt');if(o&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const k=o.dataset.pick;o.click();const f=document.querySelector(`.view.on .opt[data-pick="${k}"]`);f&&f.focus();}});
+
+/* library */
+let needF='',lvF='';
+const lvRange=s=>{const n=(s.match(/\d/g)||[]).map(Number);return[Math.min(...n),Math.max(...n)]};
+function lib(){
+  const q=document.getElementById('q').value.trim().toLowerCase();
+  document.getElementById('needf').innerHTML=[['','All needs'],...Object.entries(NEEDS)].map(([k,v])=>`<button class="fchip" aria-pressed="${needF===k}" data-need="${k}">${v}${k?` · ${LIB.filter(p=>p.id.startsWith(k)).length}`:''}</button>`).join('');
+  document.getElementById('lvlf').innerHTML=[['','Any level'],['1','Human leads'],['2','AI suggests'],['3','AI acts, you approve'],['4','AI acts alone'],['5','AI hands back']].map(([k,v])=>`<button class="fchip" aria-pressed="${lvF===k}" data-lv="${k}">${v}</button>`).join('');
+  const list=LIB.filter(p=>(!needF||p.id.startsWith(needF))&&(!lvF||(()=>{const[a,b]=lvRange(p.levels);return +lvF>=a&&+lvF<=b})())&&(!q||[p.name,p.problem,p.solution,p.psych].join(' ').toLowerCase().includes(q)));
+  document.getElementById('count').textContent=`${list.length} of ${LIB.length} patterns`;
+  document.getElementById('grid').innerHTML=list.length?list.map(p=>`<article class="pcard"><div class="top"><span>${p.id} · ${NEEDS[p.id.slice(0,2)]}</span><span>${esc(p.levels)}</span></div><h3>${esc(p.name)}${p.gap?' <span class="gap" title="Agentic gap">★</span>':''}</h3><p><b style="color:var(--ink);font-weight:500">${esc(p.problem)}.</b> ${esc(p.solution)}</p><p class="ps">${esc(p.psych)}${p.seen&&p.seen!=='—'?' · Seen in '+esc(p.seen):''}</p><button class="go" data-try="${p.id}">Try it</button></article>`).join(''):'<p style="padding:24px">No patterns match. Try fewer filters.</p>';
+}
+document.getElementById('q').addEventListener('input',lib);
+
+const R1=[['Guidelines for Human-AI Interaction','Microsoft HAX Toolkit. 18 research-tested guidelines.','https://www.microsoft.com/en-us/haxtoolkit/ai-guidelines/'],['People + AI Guidebook','Google PAIR. Chapters across the AI product lifecycle.','https://pair.withgoogle.com/guidebook'],['Generative AI','Apple Human Interface Guidelines.','https://developer.apple.com/design/human-interface-guidelines/generative-ai'],['Carbon for AI','IBM Carbon. Labelling AI content and explainability.','https://carbondesignsystem.com/guidelines/carbon-for-ai/'],['Artificial intelligence','Nielsen Norman Group. Research on AI and agents.','https://www.nngroup.com/topic/ai/'],['The Shape of AI','Emily Campbell. A catalogue of AI interaction patterns.','https://www.shapeof.ai/']];
+const R2=[['Automation bias','Why people over-trust automated advice.','https://en.wikipedia.org/wiki/Automation_bias'],['Loss aversion','Why losses weigh more than equal gains.','https://en.wikipedia.org/wiki/Loss_aversion'],['Sense of agency','The feeling of being in control of your actions.','https://en.wikipedia.org/wiki/Sense_of_agency'],['IKEA effect','Why we value what we helped make.','https://en.wikipedia.org/wiki/IKEA_effect'],['Gulf of execution and evaluation','Two gaps between people and systems.','https://en.wikipedia.org/wiki/Gulf_of_execution'],['Principle of least privilege','Give only the access a task needs.','https://en.wikipedia.org/wiki/Principle_of_least_privilege']];
+const rl=a=>a.map(([t,d,u])=>`<a href="${u}" target="_blank" rel="noopener"><b>${esc(t)} ↗</b><span>${esc(d)}</span></a>`).join('');
+document.getElementById('read1').innerHTML=rl(R1);document.getElementById('read2').innerHTML=rl(R2);
+
+function route(){let v=location.hash.slice(1);if(v==='simulator')v='play';if(!['play','library','reading','about','try'].includes(v))v='play';if(v==='try'&&!single)v='library';
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
+  document.querySelectorAll('.links a').forEach(a=>a.setAttribute('aria-current',a.getAttribute('href')==='#'+v?'page':'false'));window.scrollTo(0,0);}
+addEventListener('hashchange',route);
+route();draw();lib();
+}
+</script>
+</body></html>
