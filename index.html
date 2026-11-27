@@ -273,9 +273,41 @@ footer{border-top:1px solid var(--edge)}
 .show .verdict{margin-top:24px}
 @media(min-width:1101px){.moment.show{grid-template-columns:minmax(0,600px) auto;justify-content:center;column-gap:96px}.show .verdict{margin-top:8px}.show .mhead{margin-bottom:8px}.show .track{max-width:none}}
 @media(max-width:760px){.show .duel{margin:8px 0}.solo .win{display:flex!important}}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,680px);gap:48px;align-items:center;min-height:min(720px,calc(100vh - 64px));padding:40px 0 24px}
+.hcopy .display{font-size:clamp(48px,6vw,80px);margin-bottom:24px}
+.hcopy .lead{margin:0 0 32px;max-width:44ch}
+.hcopy .label{display:flex;align-items:center;gap:8px}
+.live{width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 4px rgba(0,114,245,.15)}
+.hint{color:var(--muted);font-size:14px;margin:14px 0 0}
+.hstage{position:relative;height:620px;display:grid;place-items:center}
+.hstage::before{content:"";position:absolute;inset:6% 2%;border-radius:2px;border:1px solid var(--panel);background-image:radial-gradient(#ebebeb 1px,transparent 1px);background-size:20px 20px;-webkit-mask-image:radial-gradient(ellipse at center,#000 55%,transparent 80%);mask-image:radial-gradient(ellipse at center,#000 55%,transparent 80%)}
+.hphone{position:relative;z-index:1}
+.hphone .win{width:280px;aspect-ratio:9/19.5;border-radius:42px;box-shadow:0 0 0 4px #171717,0 0 0 5px #a8a8a8,0 40px 80px -30px rgba(0,0,0,.4);overflow:hidden;min-height:0}
+.hphone .thread{overflow:hidden;padding:10px 14px;align-content:end;-webkit-mask-image:linear-gradient(transparent 0,#000 48px);mask-image:linear-gradient(transparent 0,#000 48px)}
+.hphone .comp{margin:0 12px 22px}
+.hin{animation:hin .35s var(--ease)}
+@keyframes hin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.htag{position:absolute;z-index:2;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:9999px;border:0;background:var(--white);box-shadow:var(--win);font-size:14px;font-weight:500;color:var(--muted);opacity:.35;transform:scale(.96);transition:opacity .3s var(--ease),transform .3s var(--ease),color .3s}
+.htag i{width:8px;height:8px;border-radius:50%;background:var(--panel)}
+.htag.on{opacity:1;transform:none;color:var(--ink)}.htag.on i{background:var(--ink)}
+.htag.now{box-shadow:0 0 0 1.5px var(--blue),var(--win)}.htag.now i{background:var(--blue)}
+.htag:hover{opacity:1;color:var(--ink)}
+.t0{left:0;top:24%}.t1{right:0;top:38%}.t2{left:0;top:58%}.t3{right:0;top:74%}
+.needs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border-top:1px solid var(--panel);border-left:1px solid var(--panel);margin:24px 0 96px}
+.need{display:flex;flex-direction:column;gap:6px;text-align:left;padding:20px;border:0;border-right:1px solid var(--panel);border-bottom:1px solid var(--panel);background:var(--canvas);min-height:150px;transition:background .15s var(--ease)}
+.need:hover{background:var(--white)}
+.nk{font-size:20px;font-weight:450;letter-spacing:-.03em}
+.nq{font-size:14px;color:var(--sec)}
+.nc{margin-top:auto;font-size:14px;font-weight:500;color:var(--muted);transition:color .15s}
+.need:hover .nc{color:var(--blue)}
+@media (prefers-reduced-motion:reduce){.hin{animation:none}}
+@media(max-width:1100px){.hero{grid-template-columns:minmax(0,1fr)}.hstage{height:600px}.needs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.hero{padding:24px 0 8px;gap:24px;min-height:0}.hcopy .display{font-size:44px}.hstage{height:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:8px 0 4px}.hstage::before{display:none}.hphone{flex-basis:100%;display:grid;place-items:center;margin-bottom:16px}.htag{position:static}.hphone .win{width:250px}.htag{height:32px;font-size:13px;padding:0 12px}.t0{left:8px}.t1{right:8px}.t2{left:8px}.t3{right:8px}.needs{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:56px}.need{min-height:130px;padding:16px}}
 </style></head><body>
 <header><div class="wrap nav">
- <a class="mark" href="#play" aria-label="The Control Room, home"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="6" width="22" height="12" rx="6" fill="currentColor"/><rect x="4" y="11" width="10" height="2" rx="1" fill="#0072f5"/><circle cx="15" cy="12" r="3.6" fill="#fafafa"/></svg>The Control Room</a>
+ <a class="mark" href="#play" aria-label="The Control Room, home"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="1" width="22" height="22" rx="7" fill="#171717"/><path d="M6.5 8.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v4.5a2 2 0 0 1-2 2h-4.2L8.5 17.5v-2.5a2 2 0 0 1-2-2z" fill="none" stroke="#fafafa" stroke-width="1.6" stroke-linejoin="round"/><circle cx="17.5" cy="6.5" r="3" fill="#0072f5" stroke="#171717" stroke-width="1.5"/></svg>The Control Room</a>
  <nav class="links" aria-label="Sections"><a href="#play">Play</a><a href="#library">Library</a><a href="#reading">Further reading</a><a href="#about">About</a></nav>
  <a class="nact" href="#library">64 patterns</a>
 </div></header>
@@ -549,14 +581,52 @@ let step=-1, picks=[], mview=0, dev='phone';
 function screen(o){const w=`<div class="win"><div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>offsite-agent.app · Design team</span></div><div class="ios" aria-hidden="true"><div class="sbar"><span>9:41</span><em>●●● ▮</em></div><div class="inav"><i>≡</i><b>Offsite agent</b><i>✎</i></div></div><div class="thread">${o.screen}</div><div class="comp" aria-hidden="true"><span>Reply…</span><span class="mode">Thinking</span><span class="stop"></span></div></div>`;return dev==='web'?`<div class="lap">${w}<div class="base" aria-hidden="true"></div></div>`:w}
 const devSwitch=()=>'';const _unusedSwitch=()=>`<div class="devs" role="group" aria-label="View on">${[['phone','Phone'],['web','Laptop']].map(([k,l])=>`<button aria-pressed="${dev===k}" data-dev="${k}">${k==='phone'?'<svg width="12" height="16" viewBox="0 0 12 16" aria-hidden="true"><rect x="1" y="1" width="10" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>':'<svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><rect x="3" y="1" width="12" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M1 12.5h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'}${l}</button>`).join('')}</div>`;
 
+const NEEDQ={OR:'What can it do?',UN:'Is it working? Is it right?',CO:'Can I steer or stop it?',TR:'Should I rely on it?',EF:'Can this take less work?',DE:'Can I let it act for me?'};
+const HTAGS=[{name:'Clarifying question',step:0},{name:'Plan first',step:1},{name:'Openable steps',step:3},{name:'Point of no return',step:5}];
+let heroTimer=null;
+function runHero(){
+  clearTimeout(heroTimer);
+  const th=document.getElementById('hthread'), ty=document.getElementById('htype');
+  if(!th)return;
+  const ask='Plan a 2-day offsite for 12, under ₹4 lakh.';
+  const tagOn=i=>{document.querySelectorAll('.htag').forEach((e,j)=>e.classList.toggle('on',j<=i));document.querySelectorAll('.htag').forEach((e,j)=>e.classList.toggle('now',j===i))};
+  const add=h=>{const d=document.createElement('div');d.className='hin';d.innerHTML=h;th.appendChild(d);while(th.scrollHeight>th.clientHeight&&th.children.length>1)th.removeChild(th.firstChild)};
+  const seq=[
+   [0,()=>{th.innerHTML='';tagOn(-1);ty.textContent='';}],
+   ...Array.from(ask).map((c,i)=>[38,()=>{ty.textContent=ask.slice(0,i+1)}]),
+   [500,()=>{ty.textContent='Reply…';add(`<div class="u">${ask}</div>`)}],
+   [700,()=>{add(A(`<p>One question first: what matters most?</p><div class="chips"><span class="chip" id="hc1">Under 3 hours away</span><span class="chip">Lowest price</span></div>`));tagOn(0)}],
+   [1400,()=>{const c=document.getElementById('hc1');c&&c.classList.add('on')}],
+   [700,()=>{add(`<div class="u">Under 3 hours away</div>`)}],
+   [700,()=>{add(A(`<p><b>Plan</b> · 4 steps</p><div class="tree"><div>1 · Find dates</div><div>2 · Shortlist venues</div><div>3 · Draft invite</div><div>4 · Pay deposit</div></div>`));tagOn(1)}],
+   [1800,()=>{add(A(`<div class="status">◌ Working · 1 min</div><div class="tree"><div><b>Calendars</b> <span class="ok">✓</span></div><div><b>Venues</b> <span class="ok">✓</span><small>Kept 3 of 30</small></div></div>`));tagOn(2)}],
+   [1800,()=>{add(A(`<div class="card gate"><b>Waiting for you</b><p style="margin:6px 0">Pay ₹90,000 deposit to Hillcrest</p><div class="warn">Can't be undone after 10 Jan</div><div class="mini"><span class="p">Pay ₹90,000</span><span>Not now</span></div></div>`));tagOn(3)}],
+   [3800,()=>{}]
+  ];
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){seq.slice(0,-1).forEach(s=>s[1]());return;}
+  let i=0;const tick=()=>{if(!document.getElementById('hthread'))return;seq[i][1]();i=(i+1)%seq.length;heroTimer=setTimeout(tick,seq[i][0])};tick();
+}
 function draw(){
   const st=document.getElementById('stage');
   if(step<0){
-    st.innerHTML=`<div class="stage"><div><h1 class="display">Teach an agent some manners</h1><p class="lead">An agent is planning your team's offsite. Walk through 8 moments and see how it should behave at each one, and why.</p><div class="caps"><button class="cap pri" data-act="start">Start</button><a class="cap sec" href="#library">Browse 64 patterns</a></div></div>
-    <div class="object" aria-hidden="true"><svg viewBox="0 0 200 200"><rect x="10" y="40" width="180" height="120" rx="36" fill="var(--ink)"/><rect x="38" y="97" width="124" height="6" rx="3" fill="#4d4d4d"/><rect x="38" y="97" width="84" height="6" rx="3" fill="var(--blue)"/>${[38,79,121,162].map((x,i)=>`<circle cx="${x}" cy="100" r="3.5" fill="${i<2?'#52aeff':'#8f8f8f'}"/>`).join('')}<circle cx="121" cy="100" r="15" fill="#fafafa"/><circle cx="121" cy="100" r="5" fill="var(--blue)"/></svg></div>
-    <div class="rail"><div><b>8 moments</b>Each one a real decision an agent faces.</div><div><b>The right screen</b>What the agent should show, on a phone.</div><div><b>The why</b>The pattern, the psychology, and what breaks without it.</div></div></div>`;
+    st.innerHTML=`<div class="hero">
+     <div class="hcopy">
+      <p class="label"><span class="live"></span>A playground for agentic experience patterns</p>
+      <h1 class="display">Teach an agent some manners</h1>
+      <p class="lead">An agent is planning your team's offsite. Walk through 8 moments and see how it should behave at each one, and why.</p>
+      <div class="caps"><a class="cap sec" href="#library">Browse 64 patterns</a><button class="cap pri" data-act="start">Start the walkthrough</button></div>
+      <p class="hint">8 moments · about 4 minutes</p>
+     </div>
+     <div class="hstage">
+      <div class="hphone"><div class="win"><div class="ios" aria-hidden="true"><div class="sbar"><span>9:41</span><em>●●● ▮</em></div><div class="inav"><i>≡</i><b>Offsite agent</b><i>✎</i></div></div><div class="thread" id="hthread" aria-live="off"></div><div class="comp" aria-hidden="true"><span id="htype">Reply…</span><span class="mode">Thinking</span><span class="stop"></span></div></div></div>
+      ${HTAGS.map((g,i)=>`<button class="htag t${i}" data-jump="${g.step}" aria-label="Open moment: ${g.name}"><i></i>${g.name}</button>`).join('')}
+     </div>
+    </div>
+    <div class="needs">${Object.entries(NEEDS).map(([k,v])=>`<button class="need" data-needgo="${k}"><span class="nk">${v}</span><span class="nq">${NEEDQ[k]}</span><span class="nc">${LIB.filter(p=>p.id.startsWith(k)).length} patterns ›</span></button>`).join('')}</div>`;
+    runHero();
     return;
   }
+  clearTimeout(heroTimer);
   if(step>=STEPS.length){
     st.innerHTML=`<div class="end"><div class="inset"><p class="label">Recap</p><p class="score" style="font-size:clamp(56px,7vw,88px)">8 habits</p><p class="proof">of an agent people trust. <span>Each one keeps a person in control at the moment it matters.</span></p><div class="caps"><button class="cap pri" data-act="restart">Start again</button><a class="cap sec" href="#library">See all 64 patterns</a></div></div>
     <div class="rows">${STEPS.map((s,i)=>`<div><span class="i">${String(i+1).padStart(2,'0')}</span><span><b>${esc(byId[s.id].name)}</b><small>${esc(s.psych)}</small></span><span></span></div>`).join('')}</div></div>`;
@@ -584,10 +654,12 @@ function drawSingle(){
   st.innerHTML=momentHTML(s,spick,i%2===1,{label:`${NEEDS[single.slice(0,2)]} · ${i+1} of ${LIB.length}`,next:'Next pattern',nextAct:'snext',back:true,backAct:'slib',backLabel:'Back to library'});
 }
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-dev],[data-act],[data-mv],[data-pick],[data-need],[data-lv],[data-try]');
+  const t=e.target.closest('[data-jump],[data-needgo],[data-dev],[data-act],[data-mv],[data-pick],[data-need],[data-lv],[data-try]');
   if(!t)return;
   const top=()=>window.scrollTo({top:0});
-  if(t.dataset.dev){dev=t.dataset.dev;draw();drawSingle();}
+  if(t.dataset.jump){step=+t.dataset.jump;draw();top();}
+  else if(t.dataset.needgo){needF=t.dataset.needgo;lvF='';lib();location.hash='library';}
+  else if(t.dataset.dev){dev=t.dataset.dev;draw();drawSingle();}
   else if(t.dataset.act==='snext'){const i=LIB.findIndex(p=>p.id===single);single=LIB[(i+1)%LIB.length].id;spick=null;drawSingle();top();}
   else if(t.dataset.act==='slib'){location.hash='library';}
   else if(t.dataset.pick&&single&&t.closest('#single')){spick=t.dataset.pick;drawSingle();const v=document.getElementById('verdict');v&&v.getBoundingClientRect().top>innerHeight-120&&v.scrollIntoView({block:'center'});}
