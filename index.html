@@ -244,6 +244,23 @@ footer{border-top:1px solid var(--edge)}
  .vwrap div[style*="text-align:center"]{text-align:left!important}
 }
 
+
+/* phones: answer as buttons, then reveal only the correct screen */
+@media(max-width:760px){
+ .duel{gap:10px}
+ .duel:not(.picked) .opt .win{display:none}
+ .duel .opt[data-pick=bad] .win{display:none}
+ .duel .olab{background:var(--white);box-shadow:0 0 0 1px var(--edge);border-radius:14px;padding:14px 16px;min-height:56px;align-self:stretch;justify-content:flex-start!important}
+ .duel .opt[aria-pressed=true] .olab{box-shadow:0 0 0 2px var(--ink)}
+ .duel.picked .opt[aria-pressed=false]{opacity:1}
+ .duel.picked .opt[aria-pressed=false] .olab{color:var(--sec)}
+ .duel.picked .opt[data-pick=good]{order:3}
+ .duel.picked .opt[data-pick=good] .olab::after{content:"The better way";margin-left:auto;font-size:12px;color:var(--muted);font-weight:500}
+ .duel.picked .opt[data-pick=good][aria-pressed=true] .olab::after{content:none}
+ .duel.picked .opt[data-pick=good] .win{margin-top:14px}
+ .tapnote{margin-top:8px}
+ .mtools{display:none}
+}
 </style></head><body>
 <header><div class="wrap nav">
  <a class="mark" href="#play" aria-label="The Control Room, home"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="6" width="22" height="12" rx="6" fill="currentColor"/><rect x="4" y="11" width="10" height="2" rx="1" fill="#0072f5"/><circle cx="15" cy="12" r="3.6" fill="#fafafa"/></svg>The Control Room</a>
