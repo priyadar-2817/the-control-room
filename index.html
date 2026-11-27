@@ -326,6 +326,17 @@ footer{border-top:1px solid var(--edge)}
 .win .comp .stop{width:26px;height:26px}
 .win .inav b{font-size:14px}.win .inav i{width:30px;height:30px;font-size:12px}
 .win .sbar{font-size:13px}
+
+.dots{display:inline-flex;gap:4px;padding:10px 12px;border-radius:16px;background:var(--fill);box-shadow:0 0 0 1px var(--edge)}
+.dots i{width:6px;height:6px;border-radius:50%;background:#8f8f8f;animation:dot 1.2s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.spin{display:inline-block;width:10px;height:10px;border-radius:50%;border:1.5px solid #c9c9c9;border-top-color:#171717;animation:spin .8s linear infinite;vertical-align:-1px;margin-right:2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hstep{opacity:0;transform:translateX(-6px);transition:opacity .4s ease,transform .45s cubic-bezier(.22,.8,.24,1)}
+.hstep.in{opacity:1;transform:none}
+.tree .wait{color:var(--muted)}.tree .wait b{color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.dots i,.spin{animation:none}.hstep{transition:none}}
 </style></head><body>
 <header><div class="wrap nav">
  <a class="mark" href="#play" aria-label="The Control Room, home"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="1" width="22" height="22" rx="7" fill="#171717"/><path d="M6.5 8.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v4.5a2 2 0 0 1-2 2h-4.2L8.5 17.5v-2.5a2 2 0 0 1-2-2z" fill="none" stroke="#fafafa" stroke-width="1.6" stroke-linejoin="round"/><circle cx="17.5" cy="6.5" r="3" fill="#0072f5" stroke="#171717" stroke-width="1.5"/></svg>The Control Room</a>
@@ -614,20 +625,34 @@ function runHero(){
   let inner=th.querySelector('.hroll');if(!inner){inner=document.createElement('div');inner.className='hroll';th.appendChild(inner);}
   const fit=()=>{const off=Math.max(0,inner.scrollHeight-th.clientHeight+10);inner.style.transform=`translateY(${-off}px)`};
   const add=h=>{const d=document.createElement('div');d.className='hin';d.innerHTML=h;inner.appendChild(d);requestAnimationFrame(()=>{d.classList.add('in');fit()})};
+  const $=id=>document.getElementById(id);
+  const think=()=>add(`<div class="a" id="hthink"><div class="who"><span class="av">O</span>Offsite agent</div><span class="dots"><i></i><i></i><i></i></span></div>`);
+  const reply=h=>{const x=$('hthink');if(x){x.parentNode.remove();}add(A(h));};
+  let secs=0, clock=null;
+  const startClock=()=>{secs=0;clearInterval(clock);clock=setInterval(()=>{secs++;const e=$('hclock');if(e)e.textContent=`0:${String(secs).padStart(2,'0')}`;else clearInterval(clock)},1000)};
   const seq=[
-   [0,()=>{inner.classList.add('fade')}],
+   [0,()=>{clearInterval(clock);inner.classList.add('fade')}],
    [450,()=>{inner.style.transition='none';inner.innerHTML='';inner.style.transform='translateY(0)';void inner.offsetHeight;inner.style.transition='';inner.classList.remove('fade');tagOn(-1);ty.textContent='';}],
-   ...Array.from(ask).map((c,i)=>[i===0?500:42,()=>{ty.textContent=ask.slice(0,i+1)}]),
-   [500,()=>{ty.textContent='Reply…';add(`<div class="u">${ask}</div>`)}],
-   [700,()=>{add(A(`<p>One question first: what matters most?</p><div class="chips"><span class="chip" id="hc1">Under 3 hours away</span><span class="chip">Lowest price</span></div>`));tagOn(0)}],
-   [1400,()=>{const c=document.getElementById('hc1');c&&c.classList.add('on')}],
-   [700,()=>{add(`<div class="u">Under 3 hours away</div>`)}],
-   [700,()=>{add(A(`<p><b>Plan</b> · 4 steps</p><div class="tree"><div>1 · Find dates</div><div>2 · Shortlist venues</div><div>3 · Draft invite</div><div>4 · Pay deposit</div></div>`));tagOn(1)}],
-   [1800,()=>{add(A(`<div class="status">◌ Working · 1 min</div><div class="tree"><div><b>Calendars</b> <span class="ok">✓</span></div><div><b>Venues</b> <span class="ok">✓</span><small>Kept 3 of 30</small></div></div>`));tagOn(2)}],
-   [1800,()=>{add(A(`<div class="card gate"><b>Waiting for you</b><p style="margin:6px 0">Pay ₹90,000 deposit to Hillcrest</p><div class="warn">Can't be undone after 10 Jan</div><div class="mini"><span class="p">Pay ₹90,000</span><span>Not now</span></div></div>`));tagOn(3)}],
-   [4200,()=>{}]
+   ...Array.from(ask).map((c,i)=>[i===0?700:38+((i*7)%5)*9,()=>{ty.textContent=ask.slice(0,i+1)}]),
+   [650,()=>{ty.textContent='Reply…';add(`<div class="u">${ask}</div>`)}],
+   [700,think],
+   [1900,()=>{reply(`<p>One question first: what matters most?</p><div class="chips"><span class="chip" id="hc1">Under 3 hours away</span><span class="chip">Lowest price</span></div>`);tagOn(0)}],
+   [1700,()=>{const c=$('hc1');c&&c.classList.add('on')}],
+   [500,()=>{add(`<div class="u">Under 3 hours away</div>`)}],
+   [650,think],
+   [2300,()=>{reply(`<p><b>Plan</b> · 4 steps</p><div class="tree" id="hplan"></div>`);tagOn(1)}],
+   ...['Find dates all 12 are free','Shortlist 3 venues','Draft the invite','Pay the deposit'].map((s,i)=>[i===0?500:420,()=>{const p=$('hplan');if(p){const d=document.createElement('div');d.className='hstep';d.textContent=`${i+1} · ${s}`;p.appendChild(d);requestAnimationFrame(()=>{d.classList.add('in');fit()})}}]),
+   [1500,()=>{add(A(`<div class="status"><span class="spin"></span>Working · <span id="hclock">0:00</span></div><div class="tree"><div id="hs1"><b>Calendars</b> <span class="spin"></span><small id="hs1t">Checking 12 people</small></div><div id="hs2" class="wait"><b>Venues</b><small id="hs2t">Next</small></div></div>`));startClock();tagOn(2)}],
+   [1300,()=>{const t=$('hs1t');t&&(t.textContent='7 of 12 checked')}],
+   [1200,()=>{const s=$('hs1');s&&(s.innerHTML='<b>Calendars</b> <span class="ok">✓</span><small>All 12 free on 23–24 Jan</small>');const v=$('hs2');v&&(v.className='',v.innerHTML='<b>Venues</b> <span class="spin"></span><small id="hs2t">Reading 4 of 30</small>')}],
+   [900,()=>{const t=$('hs2t');t&&(t.textContent='Reading 13 of 30')}],
+   [900,()=>{const t=$('hs2t');t&&(t.textContent='Reading 24 of 30')}],
+   [900,()=>{const v=$('hs2');v&&(v.innerHTML='<b>Venues</b> <span class="ok">✓</span><small>Read 30, kept 3</small>');fit()}],
+   [800,think],
+   [1800,()=>{clearInterval(clock);reply(`<div class="card gate"><b>Waiting for you</b><p style="margin:6px 0">Pay ₹90,000 deposit to Hillcrest</p><div class="warn">Can't be undone after 10 Jan</div><div class="mini"><span class="p">Pay ₹90,000</span><span>Not now</span></div></div>`);tagOn(3)}],
+   [5000,()=>{}]
   ];
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches){seq.slice(2,-1).forEach(s=>s[1]());inner.querySelectorAll('.hin').forEach(d=>d.classList.add('in'));fit();return;}
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){seq.slice(2,-1).forEach(s=>s[1]());clearInterval(clock);document.querySelectorAll('.hstep').forEach(d=>d.classList.add('in'));inner.querySelectorAll('.hin').forEach(d=>d.classList.add('in'));fit();return;}
   let i=0;const tick=()=>{if(!document.getElementById('hthread'))return;seq[i][1]();i=(i+1)%seq.length;heroTimer=setTimeout(tick,seq[i][0])};tick();
 }
 function draw(){
