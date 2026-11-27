@@ -285,10 +285,14 @@ footer{border-top:1px solid var(--edge)}
 .hstage::before{content:"";position:absolute;inset:6% 2%;border-radius:2px;border:1px solid var(--panel);background-image:radial-gradient(#ebebeb 1px,transparent 1px);background-size:20px 20px;-webkit-mask-image:radial-gradient(ellipse at center,#000 55%,transparent 80%);mask-image:radial-gradient(ellipse at center,#000 55%,transparent 80%)}
 .hphone{position:relative;z-index:1}
 .hphone .win{width:280px;aspect-ratio:9/19.5;border-radius:42px;box-shadow:0 0 0 4px #171717,0 0 0 5px #a8a8a8,0 40px 80px -30px rgba(0,0,0,.4);overflow:hidden;min-height:0}
-.hphone .thread{overflow:hidden;padding:10px 14px;align-content:end;-webkit-mask-image:linear-gradient(transparent 0,#000 48px);mask-image:linear-gradient(transparent 0,#000 48px)}
+.hphone .thread{overflow:hidden;padding:10px 14px;-webkit-mask-image:linear-gradient(transparent 0,#000 48px);mask-image:linear-gradient(transparent 0,#000 48px)}
 .hphone .comp{margin:0 12px 22px}
-.hin{animation:hin .35s var(--ease)}
-@keyframes hin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hphone .thread{position:relative;display:block}
+.hroll{display:grid;gap:14px;align-content:start;transition:transform .7s cubic-bezier(.22,.8,.24,1),opacity .4s ease;will-change:transform}
+.hroll.fade{opacity:0}
+.hin{opacity:0;transform:translateY(10px);transition:opacity .55s ease,transform .6s cubic-bezier(.22,.8,.24,1)}
+.hin.in{opacity:1;transform:none}
+.hphone .chip{transition:box-shadow .3s ease,font-weight .3s}
 .htag{position:absolute;z-index:2;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:9999px;border:0;background:var(--white);box-shadow:var(--win);font-size:14px;font-weight:500;color:var(--muted);opacity:.35;transform:scale(.96);transition:opacity .3s var(--ease),transform .3s var(--ease),color .3s}
 .htag i{width:8px;height:8px;border-radius:50%;background:var(--panel)}
 .htag.on{opacity:1;transform:none;color:var(--ink)}.htag.on i{background:var(--ink)}
@@ -302,7 +306,7 @@ footer{border-top:1px solid var(--edge)}
 .nq{font-size:14px;color:var(--sec)}
 .nc{margin-top:auto;font-size:14px;font-weight:500;color:var(--muted);transition:color .15s}
 .need:hover .nc{color:var(--blue)}
-@media (prefers-reduced-motion:reduce){.hin{animation:none}}
+@media (prefers-reduced-motion:reduce){.hin,.hroll{transition:none}}
 @media(max-width:1100px){.hero{grid-template-columns:minmax(0,1fr)}.hstage{height:600px}.needs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.hero{padding:24px 0 8px;gap:24px;min-height:0}.hcopy .display{font-size:44px}.hstage{height:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:8px 0 4px}.hstage::before{display:none}.hphone{flex-basis:100%;display:grid;place-items:center;margin-bottom:16px}.htag{position:static}.hphone .win{width:250px}.htag{height:32px;font-size:13px;padding:0 12px}.t0{left:8px}.t1{right:8px}.t2{left:8px}.t3{right:8px}.needs{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:56px}.need{min-height:130px;padding:16px}}
 
@@ -607,10 +611,13 @@ function runHero(){
   if(!th)return;
   const ask='Plan a 2-day offsite for 12, under ₹4 lakh.';
   const tagOn=i=>{document.querySelectorAll('.htag').forEach((e,j)=>e.classList.toggle('on',j<=i));document.querySelectorAll('.htag').forEach((e,j)=>e.classList.toggle('now',j===i))};
-  const add=h=>{const d=document.createElement('div');d.className='hin';d.innerHTML=h;th.appendChild(d);while(th.scrollHeight>th.clientHeight&&th.children.length>1)th.removeChild(th.firstChild)};
+  let inner=th.querySelector('.hroll');if(!inner){inner=document.createElement('div');inner.className='hroll';th.appendChild(inner);}
+  const fit=()=>{const off=Math.max(0,inner.scrollHeight-th.clientHeight+10);inner.style.transform=`translateY(${-off}px)`};
+  const add=h=>{const d=document.createElement('div');d.className='hin';d.innerHTML=h;inner.appendChild(d);requestAnimationFrame(()=>{d.classList.add('in');fit()})};
   const seq=[
-   [0,()=>{th.innerHTML='';tagOn(-1);ty.textContent='';}],
-   ...Array.from(ask).map((c,i)=>[38,()=>{ty.textContent=ask.slice(0,i+1)}]),
+   [0,()=>{inner.classList.add('fade')}],
+   [450,()=>{inner.style.transition='none';inner.innerHTML='';inner.style.transform='translateY(0)';void inner.offsetHeight;inner.style.transition='';inner.classList.remove('fade');tagOn(-1);ty.textContent='';}],
+   ...Array.from(ask).map((c,i)=>[i===0?500:42,()=>{ty.textContent=ask.slice(0,i+1)}]),
    [500,()=>{ty.textContent='Reply…';add(`<div class="u">${ask}</div>`)}],
    [700,()=>{add(A(`<p>One question first: what matters most?</p><div class="chips"><span class="chip" id="hc1">Under 3 hours away</span><span class="chip">Lowest price</span></div>`));tagOn(0)}],
    [1400,()=>{const c=document.getElementById('hc1');c&&c.classList.add('on')}],
@@ -618,9 +625,9 @@ function runHero(){
    [700,()=>{add(A(`<p><b>Plan</b> · 4 steps</p><div class="tree"><div>1 · Find dates</div><div>2 · Shortlist venues</div><div>3 · Draft invite</div><div>4 · Pay deposit</div></div>`));tagOn(1)}],
    [1800,()=>{add(A(`<div class="status">◌ Working · 1 min</div><div class="tree"><div><b>Calendars</b> <span class="ok">✓</span></div><div><b>Venues</b> <span class="ok">✓</span><small>Kept 3 of 30</small></div></div>`));tagOn(2)}],
    [1800,()=>{add(A(`<div class="card gate"><b>Waiting for you</b><p style="margin:6px 0">Pay ₹90,000 deposit to Hillcrest</p><div class="warn">Can't be undone after 10 Jan</div><div class="mini"><span class="p">Pay ₹90,000</span><span>Not now</span></div></div>`));tagOn(3)}],
-   [3800,()=>{}]
+   [4200,()=>{}]
   ];
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches){seq.slice(0,-1).forEach(s=>s[1]());return;}
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){seq.slice(2,-1).forEach(s=>s[1]());inner.querySelectorAll('.hin').forEach(d=>d.classList.add('in'));fit();return;}
   let i=0;const tick=()=>{if(!document.getElementById('hthread'))return;seq[i][1]();i=(i+1)%seq.length;heroTimer=setTimeout(tick,seq[i][0])};tick();
 }
 function draw(){
