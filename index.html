@@ -261,6 +261,18 @@ footer{border-top:1px solid var(--edge)}
  .tapnote{margin-top:8px}
  .mtools{display:none}
 }
+
+/* walkthrough layout */
+.solo{grid-template-columns:auto!important;justify-content:center}
+.solo .opt{cursor:default}
+.solo .win{box-shadow:0 0 0 4px #171717,0 0 0 5px #a8a8a8,0 24px 48px -24px rgba(0,0,0,.35)!important}
+.without{border-left:2px solid var(--panel);padding:2px 0 2px 14px;margin:0 0 24px;max-width:48ch}
+.without small{display:block;font-size:13px;font-weight:500;color:var(--bad);margin-bottom:4px}
+.without p{margin:0;font-size:15px;line-height:22px;color:var(--sec)}
+.without b{color:var(--ink);font-weight:500}
+.show .verdict{margin-top:24px}
+@media(min-width:1101px){.moment.show{grid-template-columns:minmax(0,600px) auto;justify-content:center;column-gap:96px}.show .verdict{margin-top:8px}.show .mhead{margin-bottom:8px}.show .track{max-width:none}}
+@media(max-width:760px){.show .duel{margin:8px 0}.solo .win{display:flex!important}}
 </style></head><body>
 <header><div class="wrap nav">
  <a class="mark" href="#play" aria-label="The Control Room, home"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="6" width="22" height="12" rx="6" fill="currentColor"/><rect x="4" y="11" width="10" height="2" rx="1" fill="#0072f5"/><circle cx="15" cy="12" r="3.6" fill="#fafafa"/></svg>The Control Room</a>
@@ -293,7 +305,7 @@ footer{border-top:1px solid var(--edge)}
  <div class="prose">
   <p>Agents don't just answer. They plan, spend, send and book. The design question is no longer what the AI says, but how far it should go on its own.</p>
   <p>The Control Room sorts AI interaction patterns by the psychological need each serves: <b>Orientation</b>, <b>Uncertainty</b>, <b>Control</b>, <b>Trust</b>, <b>Effort</b> and <b>Delegation</b>. Each is placed on a spectrum of who is driving, from human leads to AI hands back.</p>
-  <p>In <b>Play</b>, you follow an agent through a real job and choose how it should behave at 8 moments. Every choice shows the pattern, the psychology behind it, and what happens without it.</p>
+  <p>In <b>Play</b>, you follow an agent through a real job across 8 moments. Each shows what the agent should do, the pattern and psychology behind it, and what breaks without it.</p>
   <p>Patterns marked as gaps (clarifying questions, access requests, dry runs, budget guards, teams of agents and more) are areas existing collections rarely cover.</p>
   <p>The scenario, venues, people and amounts are made up. Product names in the library only say where a pattern can be seen.</p>
   <p>Designed and written by Priyadarshi, a product designer working where behavioural psychology meets product design.</p>
@@ -540,38 +552,36 @@ const devSwitch=()=>'';const _unusedSwitch=()=>`<div class="devs" role="group" a
 function draw(){
   const st=document.getElementById('stage');
   if(step<0){
-    st.innerHTML=`<div class="stage"><div><h1 class="display">Teach an agent some manners</h1><p class="lead">An agent is planning your team's offsite. Eight times, it could act one of two ways. You pick.</p><div class="caps"><button class="cap pri" data-act="start">Start</button><a class="cap sec" href="#library">Browse 64 patterns</a></div></div>
+    st.innerHTML=`<div class="stage"><div><h1 class="display">Teach an agent some manners</h1><p class="lead">An agent is planning your team's offsite. Walk through 8 moments and see how it should behave at each one, and why.</p><div class="caps"><button class="cap pri" data-act="start">Start</button><a class="cap sec" href="#library">Browse 64 patterns</a></div></div>
     <div class="object" aria-hidden="true"><svg viewBox="0 0 200 200"><rect x="10" y="40" width="180" height="120" rx="36" fill="var(--ink)"/><rect x="38" y="97" width="124" height="6" rx="3" fill="#4d4d4d"/><rect x="38" y="97" width="84" height="6" rx="3" fill="var(--blue)"/>${[38,79,121,162].map((x,i)=>`<circle cx="${x}" cy="100" r="3.5" fill="${i<2?'#52aeff':'#8f8f8f'}"/>`).join('')}<circle cx="121" cy="100" r="15" fill="#fafafa"/><circle cx="121" cy="100" r="5" fill="var(--blue)"/></svg></div>
-    <div class="rail"><div><b>8 moments</b>Each one a real decision an agent faces.</div><div><b>Two screens</b>Pick the one the agent should show.</div><div><b>One reason</b>See the pattern and the psychology behind it.</div></div></div>`;
+    <div class="rail"><div><b>8 moments</b>Each one a real decision an agent faces.</div><div><b>The right screen</b>What the agent should show, on a phone.</div><div><b>The why</b>The pattern, the psychology, and what breaks without it.</div></div></div>`;
     return;
   }
   if(step>=STEPS.length){
-    const g=picks.filter(x=>x==='good').length;
-    st.innerHTML=`<div class="end"><div class="inset"><p class="label">Your result</p><div class="score">${g}/8</div><p class="proof">${g>=7?'You\'d trust this agent with ₹90,000.':g>=4?'A few habits to fix before it handles money.':'This agent needs a lot more manners.'} <span>Here's what each moment was teaching.</span></p><div class="caps"><button class="cap pri" data-act="restart">Play again</button><a class="cap sec" href="#library">See all 64 patterns</a></div></div>
-    <div class="rows">${STEPS.map((s,i)=>`<div><span class="i">${String(i+1).padStart(2,'0')}</span><span><b>${esc(byId[s.id].name)}</b><small>${esc(s.psych)}</small></span><span class="${picks[i]==='good'?'ok':''}" aria-label="${picks[i]==='good'?'Good call':'Missed'}">${picks[i]==='good'?'✓':'–'}</span></div>`).join('')}</div></div>`;
+    st.innerHTML=`<div class="end"><div class="inset"><p class="label">Recap</p><p class="score" style="font-size:clamp(56px,7vw,88px)">8 habits</p><p class="proof">of an agent people trust. <span>Each one keeps a person in control at the moment it matters.</span></p><div class="caps"><button class="cap pri" data-act="restart">Start again</button><a class="cap sec" href="#library">See all 64 patterns</a></div></div>
+    <div class="rows">${STEPS.map((s,i)=>`<div><span class="i">${String(i+1).padStart(2,'0')}</span><span><b>${esc(byId[s.id].name)}</b><small>${esc(s.psych)}</small></span><span></span></div>`).join('')}</div></div>`;
     return;
   }
-  st.innerHTML=momentHTML(STEPS[step],picks[step],step%2===1,{label:`Moment ${step+1} of 8`,track:true,next:step===7?'See my result':'Next moment',back:step>0});
+  st.innerHTML=momentHTML(STEPS[step],picks[step],step%2===1,{label:`Moment ${step+1} of 8`,track:true,next:step===7?'See the recap':'Next moment',back:step>0});
 }
 function momentHTML(s,pick,flip,o){
-  const opts=[['bad',s.bad],['good',s.good]]; if(flip)opts.reverse();
-  const res=pick?s[pick]:null;
   const nm=byId[s.id];
-  return `<div class="moment">
+  return `<div class="moment show">
    ${o.track?`<div class="track" role="img" aria-label="${o.label}">${STEPS.map((_,i)=>`<span class="${i<step?'d':i===step?'n':''}"></span>`).join('')}</div>`:''}
-   <div class="mhead"><div><p class="label">${o.label}</p><h1 class="heading">${esc(s.q)}</h1></div><p class="scene">${esc(s.scene)}</p></div>
-   <div class="mtools"><small>Two versions of the same moment. Pick the one the agent should show.</small>${devSwitch()}</div>
-   <div class="duel dev-${dev}${pick?' picked':''}">${opts.map(([k,x],i)=>`<div class="opt" role="button" tabindex="0" data-pick="${k}" aria-pressed="${pick===k}"><div class="olab"><span class="k">${'AB'[i]}</span>${esc(x.label)}${pick===k?`<span class="pick-tag ${k}">${k==='good'?'Good call':'Risky'}</span>`:''}</div>${screen(x)}</div>`).join('')}</div>
-   <div class="vwrap">${pick?`<div class="verdict" id="verdict" aria-live="polite"><div><p class="proof">${esc(res.head)} <span>${esc(res.text)}</span></p><div class="caps"><button class="cap pri" data-act="${o.nextAct||'next'}">${o.next}</button>${o.back?`<button class="cap sec" data-act="${o.backAct||'back'}">${o.backLabel||'Previous'}</button>`:''}</div></div>
-     <div class="tile"><span class="face"></span><small>The pattern · ${s.id}</small><h3>${esc(nm.name)}</h3><p>${esc(s.psych||nm.psych)}</p></div></div>`
-   :`<p class="tapnote">Tap A or B.</p>${o.back?`<div style="text-align:center"><button class="back" data-act="${o.backAct||'back'}">${o.backLabel||'Previous moment'}</button></div>`:''}`}</div>
+   <div class="mhead"><div><p class="label">${o.label} · ${esc(nm.name)}</p><h1 class="heading">${esc(s.good.label)}</h1></div><p class="scene">${esc(s.scene)}</p></div>
+   <div class="duel dev-phone solo"><div class="opt">${screen(s.good)}</div></div>
+   <div class="vwrap"><div class="verdict"><div>
+     <p class="proof">${esc(s.good.head)} <span>${esc(s.good.text)}</span></p>
+     <div class="without"><small>Without it</small><p><b>${esc(s.bad.label)}.</b> ${esc(s.bad.head)} ${esc(s.bad.text)}</p></div>
+     <div class="caps"><button class="cap pri" data-act="${o.nextAct||'next'}">${o.next}</button>${o.back?`<button class="cap sec" data-act="${o.backAct||'back'}">${o.backLabel||'Previous'}</button>`:''}</div></div>
+     <div class="tile"><span class="face"></span><small>The pattern · ${s.id}</small><h3>${esc(nm.name)}</h3><p>${esc(s.psych||nm.psych)}</p></div></div></div>
   </div>`;
 }
 function drawSingle(){
   const st=document.getElementById('single');
   if(!single){st.innerHTML='';return;}
   const s=PAT[single], i=LIB.findIndex(p=>p.id===single);
-  st.innerHTML=momentHTML(s,spick,i%2===1,{label:`${single} · ${NEEDS[single.slice(0,2)]} · ${i+1} of ${LIB.length}`,next:'Next pattern',nextAct:'snext',back:true,backAct:'slib',backLabel:'Back to library'});
+  st.innerHTML=momentHTML(s,spick,i%2===1,{label:`${NEEDS[single.slice(0,2)]} · ${i+1} of ${LIB.length}`,next:'Next pattern',nextAct:'snext',back:true,backAct:'slib',backLabel:'Back to library'});
 }
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-dev],[data-act],[data-mv],[data-pick],[data-need],[data-lv],[data-try]');
@@ -601,7 +611,7 @@ function lib(){
   document.getElementById('lvlf').innerHTML=[['','Any level'],['1','Human leads'],['2','AI suggests'],['3','AI acts, you approve'],['4','AI acts alone'],['5','AI hands back']].map(([k,v])=>`<button class="fchip" aria-pressed="${lvF===k}" data-lv="${k}">${v}</button>`).join('');
   const list=LIB.filter(p=>(!needF||p.id.startsWith(needF))&&(!lvF||(()=>{const[a,b]=lvRange(p.levels);return +lvF>=a&&+lvF<=b})())&&(!q||[p.name,p.problem,p.solution,p.psych].join(' ').toLowerCase().includes(q)));
   document.getElementById('count').textContent=`${list.length} of ${LIB.length} patterns`;
-  document.getElementById('grid').innerHTML=list.length?list.map(p=>`<article class="pcard"><div class="top"><span>${p.id} · ${NEEDS[p.id.slice(0,2)]}</span><span>${esc(p.levels)}</span></div><h3>${esc(p.name)}${p.gap?' <span class="gap" title="Agentic gap">★</span>':''}</h3><p><b style="color:var(--ink);font-weight:500">${esc(p.problem)}.</b> ${esc(p.solution)}</p><p class="ps">${esc(p.psych)}${p.seen&&p.seen!=='—'?' · Seen in '+esc(p.seen):''}</p><button class="go" data-try="${p.id}">Try it</button></article>`).join(''):'<p style="padding:24px">No patterns match. Try fewer filters.</p>';
+  document.getElementById('grid').innerHTML=list.length?list.map(p=>`<article class="pcard"><div class="top"><span>${p.id} · ${NEEDS[p.id.slice(0,2)]}</span><span>${esc(p.levels)}</span></div><h3>${esc(p.name)}${p.gap?' <span class="gap" title="Agentic gap">★</span>':''}</h3><p><b style="color:var(--ink);font-weight:500">${esc(p.problem)}.</b> ${esc(p.solution)}</p><p class="ps">${esc(p.psych)}${p.seen&&p.seen!=='—'?' · Seen in '+esc(p.seen):''}</p><button class="go" data-try="${p.id}">See it</button></article>`).join(''):'<p style="padding:24px">No patterns match. Try fewer filters.</p>';
 }
 document.getElementById('q').addEventListener('input',lib);
 
