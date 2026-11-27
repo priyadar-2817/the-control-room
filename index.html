@@ -634,7 +634,7 @@ function runHero(){
   const think=()=>add(`<div class="a" id="hthink"><div class="who"><span class="av">O</span>Offsite agent</div><span class="dots"><i></i><i></i><i></i></span></div>`);
   const reply=h=>{const x=$('hthink');if(x){x.parentNode.remove();}add(A(h));};
   let secs=0, clock=null;
-  const startClock=()=>{secs=0;clearInterval(clock);clock=setInterval(()=>{secs++;const e=$('hclock');if(e)e.textContent=`0:${String(secs).padStart(2,'0')}`;else clearInterval(clock)},1000)};
+  const startClock=()=>{secs=0;clearInterval(clock);clock=setInterval(()=>{secs++;const e=$('hclock');if(e)e.textContent=`0:${String(secs).padStart(2,'0')}`;else clearInterval(clock)},600)};
   const tap=id=>{const e=$(id);if(e){e.classList.add('tapped');setTimeout(()=>e.classList.remove('tapped'),350)}};
   const hold=(ms,f)=>[ms,f||(()=>{})];
   const seq=[
@@ -683,7 +683,7 @@ function runHero(){
    [5200,()=>{}]
   ];
   if(matchMedia('(prefers-reduced-motion:reduce)').matches){seq.slice(2,-1).forEach(s=>s[1]());clearInterval(clock);document.querySelectorAll('.hstep').forEach(d=>d.classList.add('in'));inner.querySelectorAll('.hin').forEach(d=>d.classList.add('in'));fit();return;}
-  let i=0;const tick=()=>{if(!document.getElementById('hthread'))return;seq[i][1]();i=(i+1)%seq.length;heroTimer=setTimeout(tick,seq[i][0])};tick();
+  const SPEED=0.55;let i=0;const tick=()=>{if(!document.getElementById('hthread'))return;seq[i][1]();i=(i+1)%seq.length;heroTimer=setTimeout(tick,seq[i][0]*SPEED)};tick();
 }
 function draw(){
   const st=document.getElementById('stage');
